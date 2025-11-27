@@ -7,7 +7,7 @@ const { songs, searchSongs } = useITunes();
 const player = usePlayer();
 
 onMounted(() => {
-  searchSongs("lofi");
+  searchSongs("bad bunny");
 });
 
 watch(songs, (newSongs) => {
