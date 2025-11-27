@@ -53,12 +53,31 @@ export const usePlayer = defineStore("player", {
         },
 
         restart() {
-            if (this.audio) {
+            if (!this.audio) return;
+
+            if (this.audio.currentTime > 3) {
+                // Restart current song
                 this.audio.currentTime = 0;
                 this.audio.play();
                 this.playing = true;
+            } else {
+                // Go to previous song
+                this.previous();
             }
         },
+
+        previous() {
+            if (this.playlist.length === 0) return;
+
+            this.currentIndex =
+                (this.currentIndex - 1 + this.playlist.length) % this.playlist.length;
+            const prevTrack = this.playlist[this.currentIndex];
+            this.track = prevTrack;
+            this._loadTrack(prevTrack);
+            this.audio.play();
+            this.playing = true;
+        },
+
 
         next() {
             if (this.playlist.length === 0) return;
