@@ -27,7 +27,7 @@ import PlayerBar from "./components/PlayerBar.vue";
 
 
     <!-- Global music player -->
-    <PlayerBar />
+    <PlayerBar class="player-bar" />
 
     <!-- Page content -->
     <main class="main-content">
@@ -81,6 +81,12 @@ import PlayerBar from "./components/PlayerBar.vue";
 
 /* Page content pushed right */
 .main-content {
+  margin-left: 220px; /* same width as sidebar */
+  padding: 20px;
+}
+
+/*PlayerBar*/
+.player-bar {
   margin-left: 220px; /* same width as sidebar */
   padding: 20px;
 }
