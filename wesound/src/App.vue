@@ -8,7 +8,7 @@ import PlayerBar from "./components/PlayerBar.vue";
 
     <!-- Navigation -->
     <nav class="p-4 flex gap-4 border-b">
-      <router-link to="/home">Home</router-link>
+      <router-link to="/">Home</router-link>
       <router-link to="/feed">Feed</router-link>
       <router-link to="/messages">Messages</router-link>
       <router-link to="/profile/1">Profile</router-link>
