@@ -14,13 +14,14 @@ import PlayerBar from "./components/PlayerBar.vue";
       <router-link to="/profile/1">Profile</router-link>
     </nav>
 
+    <!-- Global music player -->
+    <PlayerBar />
+
     <!-- Page content -->
     <main class="p-4">
       <RouterView />
     </main>
 
-    <!-- Global music player -->
-    <PlayerBar />
   </div>
 </template>
 
