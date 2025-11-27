@@ -22,7 +22,7 @@ watch(songs, (newSongs) => {
 <template>
   <div class="home-page p-4">
     <h1 class="text-3xl font-bold mb-4">Home</h1>
-    <p>Welcome to WeSound — your music remixing social app!</p>
+    <p>Welcome to WeSound — your music social app!</p>
   </div>
 
   <!-- Songs container -->
@@ -38,7 +38,6 @@ watch(songs, (newSongs) => {
       <div class="song-meta">
         <h1>{{ song.title }}</h1>
         <p class="artist">{{ song.artist }}</p>
-        <p class="duration">{{ song.duration }} sec</p>
       </div>
     </button>
   </div>
@@ -88,19 +87,13 @@ watch(songs, (newSongs) => {
   font-size: 15px;
   font-weight: 600;
   margin: 0 0 4px;
-  color: #000000; /* white text for dark UI */
+  color: #ffffff; /* white text for dark UI */
 }
 
 .song-meta .artist {
   font-size: 13px;
-  color: #000000;
+  color: #232323;
   margin: 0 0 2px;
-}
-
-.song-meta .duration {
-  font-size: 12px;
-  color: #5a5959;
-  margin: 0;
 }
 
 </style>

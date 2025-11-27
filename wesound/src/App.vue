@@ -38,10 +38,22 @@ import PlayerBar from "./components/PlayerBar.vue";
 </template>
 
 <style scoped>
-/* Main Page */
-.main {
-  background-color: #373535;
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: transparent;
 }
+
+/* Main Page */
+.app-layout, #app {
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(180deg, #6b6b6b 0%, #000000 100%);
+  color: white;
+}
+
 /* Sidebar layout */
 .sidebar {
   position: fixed;
