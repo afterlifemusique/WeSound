@@ -15,6 +15,9 @@
     <button @click="toggle" class="text-xl">
       {{ playing ? "⏸" : "▶️" }}
     </button>
+    <button @click="player.next" class="text-xl">
+      {{ "⏭" }}
+    </button>
   </div>
 </template>
 
@@ -35,4 +38,8 @@ const restart = () => {
     player.playing = true;
   }
 };
+
+const next = () => {
+
+}
 </script>

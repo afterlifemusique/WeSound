@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted } from "vue";
+import {onMounted, watch} from "vue";
 import { useITunes } from "../composables/useITunes";
 import { usePlayer } from "../store/player";
 
@@ -9,6 +9,14 @@ const player = usePlayer();
 onMounted(() => {
   searchSongs("lofi");
 });
+
+watch(songs, (newSongs) => {
+  console.log("Songs updated:", newSongs.length);
+  if (newSongs.length) {
+    player.setPlaylist(newSongs);
+  }
+});
+
 </script>
 
 <template>
