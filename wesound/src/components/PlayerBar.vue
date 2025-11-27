@@ -13,7 +13,7 @@
       {{ "⏮" }}
     </button>
     <button @click="toggle" class="text-xl">
-      {{ playing ? "⏸" : "▶️" }}
+      {{ playing ? "⏸" : "▶" }}
     </button>
     <button @click="player.next()" class="text-xl">
       {{ "⏭" }}

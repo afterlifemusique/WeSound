@@ -27,15 +27,12 @@ watch(songs, (newSongs) => {
 
   <!-- Songs container -->
   <div class="songs-container flex flex-wrap gap-4">
-    <div v-for="song in songs" :key="song.id" class="song-item">
-      <div>
-        <h1>{{ song.title }}</h1>
-        <p>{{ song.artist }}</p>
-        <p>{{ song.duration }}sec</p>
-      </div>
+    <button @click="player.play(song)" class="ml-auto text-xl song-item" v-for="song in songs" :key="song.id">
+      <h1>{{ song.title }}</h1>
+      <p>{{ song.artist }}</p>
+      <p>{{ song.duration }}sec</p>
       <img :src="song.cover" :alt="song.title" width="80" />
-      <button @click="player.play(song)" class="ml-auto text-xl">▶️</button>
-    </div>
+    </button>
   </div>
 </template>
 
