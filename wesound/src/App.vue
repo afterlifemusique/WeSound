@@ -47,33 +47,32 @@ watch(songs, (newSongs) => {
   </div>
 </template>
 
-<style scoped>
+<style>
 html, body {
   margin: 0;
   padding: 0;
   height: 100%;
-  background: transparent;
+  overflow: hidden;
+  background: linear-gradient(180deg, #6b6b6b 0%, #000000 100%);
+  color: white;
 }
-
+</style>
+<style scoped>
 /* Main Page */
 .app-layout, #app {
   min-height: 100vh;
   margin: 0;
   padding: 0;
-  background: linear-gradient(180deg, #6b6b6b 0%, #000000 100%);
   color: white;
 }
 
 /* Search Bar */
 .app-header {
   position: fixed;
-  top: 0;
-  left: 220px;
+  top: 15px;
+  left: 50px;
   right: 0;
   z-index: 50;
-}
-main {
-  padding-top: 60px; /* height of header */
 }
 
 /* Sidebar layout */
@@ -119,8 +118,12 @@ main {
 
 /* Page content pushed right */
 .main-content {
-  margin-left: 220px; /* same width as sidebar */
+  margin-left: 230px;
   padding: 20px;
+  padding-top: 80px; /* header height */
+  padding-bottom: 80px; /* player height */
+  height: calc(100vh - 60px - 60px); /* viewport minus header + player */
+  overflow-y: auto;
 }
 
 /*PlayerBar*/

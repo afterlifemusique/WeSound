@@ -37,7 +37,7 @@ const toggle = () =>
 .playerbar {
   position: fixed;
   bottom: 0;
-  left: 220px; /* align with your sidebar */
+  left: 250px; /* align with your sidebar */
   right: 0;
   height: 64px;
   background: #f8f8f8;

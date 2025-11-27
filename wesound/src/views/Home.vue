@@ -80,7 +80,7 @@ const player = usePlayer();
 
 .song-meta .artist {
   font-size: 13px;
-  color: #232323;
+  color: #b6b6b6;
   margin: 0 0 2px;
 }
 

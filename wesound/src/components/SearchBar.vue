@@ -47,7 +47,7 @@ const onSearch = (e) => {
   padding: 8px 12px;
   background-color: #282828; /* Spotify dark background */
   border-radius: 4px;
-  max-width: 400px;
+  max-width: 500px;
   margin: 0 auto;
   box-shadow: 0 2px 4px rgb(0 0 0 / 0.5);
 }
