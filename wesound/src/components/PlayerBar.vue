@@ -9,7 +9,9 @@
       <h3 class="font-semibold">{{ track.title }}</h3>
       <p class="text-sm opacity-70">{{ track.artist }}</p>
     </div>
-
+    <button @click="restart" class="text-xl">
+      {{ "⏮" }}
+    </button>
     <button @click="toggle" class="text-xl">
       {{ playing ? "⏸" : "▶️" }}
     </button>
@@ -25,4 +27,12 @@ const { track, playing } = storeToRefs(player);
 
 const toggle = () =>
     playing.value ? player.pause() : player.play();
+
+const restart = () => {
+  if (player.audio) {
+    player.audio.currentTime = 0;
+    player.audio.play();
+    player.playing = true;
+  }
+};
 </script>
