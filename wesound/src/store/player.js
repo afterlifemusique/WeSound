@@ -52,6 +52,14 @@ export const usePlayer = defineStore("player", {
             this.playing = false;
         },
 
+        restart() {
+            if (this.audio) {
+                this.audio.currentTime = 0;
+                this.audio.play();
+                this.playing = true;
+            }
+        },
+
         next() {
             if (this.playlist.length === 0) return;
 
