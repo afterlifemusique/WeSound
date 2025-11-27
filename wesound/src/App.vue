@@ -3,7 +3,7 @@ import { RouterView } from "vue-router";
 import PlayerBar from "./components/PlayerBar.vue";
 </script>
 
-<template>
+<template class="main">
   <div class="app-layout">
 
     <!-- Navigation -->
@@ -38,6 +38,10 @@ import PlayerBar from "./components/PlayerBar.vue";
 </template>
 
 <style scoped>
+/* Main Page */
+.main {
+  background-color: #373535;
+}
 /* Sidebar layout */
 .sidebar {
   position: fixed;
@@ -45,7 +49,7 @@ import PlayerBar from "./components/PlayerBar.vue";
   top: 0;
   bottom: 0;
   width: 220px;
-  background: #121212; /* Spotify dark */
+  background: #121212;
   padding: 20px 12px;
   display: flex;
   flex-direction: column;
@@ -74,7 +78,7 @@ import PlayerBar from "./components/PlayerBar.vue";
 
 /* Active link (router-link-active) */
 .nav-item.router-link-active {
-  background: #8f6c28; /* Spotify green */
+  background: #8f6c28;
   color: black;
   font-weight: bold;
 }

@@ -53,23 +53,24 @@ watch(songs, (newSongs) => {
   padding-bottom: 120px; /* avoid overlapping with player bar */
 }
 
-/* Card */
+/* Card — transparent background */
 .song-item {
   width: 200px;
   padding: 12px;
   display: flex;
   flex-direction: column;
   text-align: left;
-  background: #fff;
-  border: 1px solid #ddd;
+  background: transparent;       /* <-- transparent */
+  border: 1px solid transparent; /* invisible border for layout consistency */
   border-radius: 6px;
   cursor: pointer;
-  transition: box-shadow 0.2s, transform 0.2s;
+  transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
 }
 
-/* Hover effect like YouTube Studio cards */
+/* Hover — slight outline & lift (YT Studio vibe) */
 .song-item:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  border-color: rgba(255,255,255,0.1); /* subtle outline */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   transform: translateY(-2px);
 }
 
@@ -82,23 +83,23 @@ watch(songs, (newSongs) => {
   margin-bottom: 10px;
 }
 
-/* Text styles */
+/* Text */
 .song-meta h1 {
   font-size: 15px;
   font-weight: 600;
   margin: 0 0 4px;
-  color: #111;
+  color: #000000; /* white text for dark UI */
 }
 
 .song-meta .artist {
   font-size: 13px;
-  color: #666;
+  color: #000000;
   margin: 0 0 2px;
 }
 
 .song-meta .duration {
   font-size: 12px;
-  color: #999;
+  color: #5a5959;
   margin: 0;
 }
 
