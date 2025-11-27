@@ -1,42 +1,49 @@
 <script setup>
+import { watch } from "vue";
 import { RouterView } from "vue-router";
 import PlayerBar from "./components/PlayerBar.vue";
 import SearchBar from "./components/SearchBar.vue";
+
+import { useITunes } from "./composables/useITunes";
+import { usePlayer } from "./store/player";
+
+const { songs, searchSongs, loading } = useITunes();
+const player = usePlayer();
+
+const handleSearch = (query) => {
+  searchSongs(query);
+};
+
+watch(songs, (newSongs) => {
+  if (newSongs.length) {
+    player.setPlaylist(newSongs);
+  }
+});
 </script>
 
-<template class="main">
+<template>
   <div class="app-layout">
     <!-- Search Bar -->
-    <SearchBar />
+    <header class="app-header p-4 bg-gray-900">
+      <SearchBar :loading="loading" @search="handleSearch" />
+    </header>
 
-    <!-- Navigation -->
+    <!-- Navigation Sidebar -->
     <nav class="sidebar">
-      <router-link to="/" class="nav-item">
-        <span>Home</span>
-      </router-link>
-
-      <router-link to="/feed" class="nav-item">
-        <span>Feed</span>
-      </router-link>
-
-      <router-link to="/messages" class="nav-item">
-        <span>Messages</span>
-      </router-link>
-
-      <router-link to="/profile/1" class="nav-item">
-        <span>Profile</span>
-      </router-link>
+      <router-link to="/" class="nav-item">Home</router-link>
+      <router-link to="/feed" class="nav-item">Feed</router-link>
+      <router-link to="/messages" class="nav-item">Messages</router-link>
+      <router-link to="/profile/1" class="nav-item">Profile</router-link>
     </nav>
 
-
-    <!-- Global music player -->
-    <PlayerBar class="player-bar" />
-
-    <!-- Page content -->
+    <!-- Main content -->
     <main class="main-content">
-      <RouterView />
+      <!-- Pass songs as prop to routed components -->
+      <RouterView :songs="songs" />
     </main>
 
+    <!-- Global Player -->
+    <PlayerBar />
   </div>
 </template>
 
@@ -55,6 +62,18 @@ html, body {
   padding: 0;
   background: linear-gradient(180deg, #6b6b6b 0%, #000000 100%);
   color: white;
+}
+
+/* Search Bar */
+.app-header {
+  position: fixed;
+  top: 0;
+  left: 220px;
+  right: 0;
+  z-index: 50;
+}
+main {
+  padding-top: 60px; /* height of header */
 }
 
 /* Sidebar layout */

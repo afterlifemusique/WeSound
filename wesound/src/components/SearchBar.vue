@@ -1,15 +1,15 @@
 <script setup>
 import { ref } from "vue";
-import { useITunes } from "../composables/useITunes";
 
-const { searchSongs, loading } = useITunes();
+const emit = defineEmits(["search"]);
+const { loading } = defineProps({ loading: Boolean });
+
 const query = ref("");
 
-// Call searchSongs when user submits the form
 const onSearch = (e) => {
   e.preventDefault();
   if (query.value.trim()) {
-    searchSongs(query.value.trim());
+    emit("search", query.value.trim());
   }
 };
 </script>
@@ -21,7 +21,6 @@ const onSearch = (e) => {
         v-model="query"
         placeholder="Search songs..."
         class="search-input"
-        :disabled="loading"
     />
     <button type="submit" :disabled="loading" aria-label="Search">
       <svg
@@ -87,7 +86,7 @@ button {
 }
 
 button:hover {
-  color: #8f6c28;
+  color: #ad7e18;
 }
 
 button:disabled {

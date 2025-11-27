@@ -1,48 +1,36 @@
 <script setup>
-import {onMounted, watch} from "vue";
-import { useITunes } from "../composables/useITunes";
 import { usePlayer } from "../store/player";
 
-const { songs, searchSongs } = useITunes();
+defineProps({
+  songs: Array,
+});
+
 const player = usePlayer();
-
-onMounted(() => {
-  searchSongs("bad bunny");
-});
-
-watch(songs, (newSongs) => {
-  console.log("Songs updated:", newSongs.length);
-  if (newSongs.length) {
-    player.setPlaylist(newSongs);
-  }
-});
-
 </script>
 
 <template>
   <div class="home-page p-4">
     <h1 class="text-3xl font-bold mb-4">Home</h1>
     <p>Welcome to WeSound — your music social app!</p>
+
+    <!-- Songs container -->
+    <div class="songs-container">
+      <button
+          v-for="song in songs"
+          :key="song.id"
+          @click="player.play(song)"
+          class="song-item"
+      >
+        <img :src="song.cover" :alt="song.title" />
+        <div class="song-meta">
+          <h1>{{ song.title }}</h1>
+          <p class="artist">{{ song.artist }}</p>
+        </div>
+      </button>
+    </div>
   </div>
-
-  <!-- Songs container -->
-  <div class="songs-container">
-    <button
-        v-for="song in songs"
-        :key="song.id"
-        @click="player.play(song)"
-        class="song-item"
-    >
-      <img :src="song.cover" :alt="song.title" />
-
-      <div class="song-meta">
-        <h1>{{ song.title }}</h1>
-        <p class="artist">{{ song.artist }}</p>
-      </div>
-    </button>
-  </div>
-
 </template>
+
 
 <style scoped>
 .songs-container {
