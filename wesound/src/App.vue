@@ -1,10 +1,13 @@
 <script setup>
 import { RouterView } from "vue-router";
 import PlayerBar from "./components/PlayerBar.vue";
+import SearchBar from "./components/SearchBar.vue";
 </script>
 
 <template class="main">
   <div class="app-layout">
+    <!-- Search Bar -->
+    <SearchBar />
 
     <!-- Navigation -->
     <nav class="sidebar">
