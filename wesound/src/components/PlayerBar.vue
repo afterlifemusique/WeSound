@@ -1,6 +1,6 @@
 <template>
   <div v-if="track" class="fixed bottom-0 left-0 right-0 bg-black text-white p-3 flex items-center gap-4">
-    <img :src="track.cover_url" class="w-12 h-12 rounded" />
+    <img :src="track.cover" :alt="track.title" class="w-12 h-12 rounded" />
     <div class="flex-1">
       <h3 class="font-semibold">{{ track.title }}</h3>
       <p class="text-sm opacity-70">{{ track.artist }}</p>

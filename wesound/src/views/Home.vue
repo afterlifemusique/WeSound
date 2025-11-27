@@ -1,9 +1,10 @@
 <script setup>
 import { onMounted } from "vue";
 import { useITunes } from "../composables/useITunes";
-import PlayerBar from "../components/PlayerBar.vue";
+import { usePlayer } from "../store/player";
 
 const { songs, searchSongs } = useITunes();
+const player = usePlayer();
 
 onMounted(() => {
   searchSongs("lofi");
@@ -22,6 +23,7 @@ onMounted(() => {
       <p>{{ song.duration }}sec</p>
       <p>{{ song.url }}</p>
     </div>
-    <img :src="song.cover" width="80" />
+    <img :src="song.cover" :alt="song.title" width="80" />
+    <button @click="player.play(song)" class="ml-auto text-xl">▶️</button>
   </div>
 </template>
