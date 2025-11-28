@@ -1,13 +1,30 @@
 import { supabase } from "../composables/useSupabase.js";
 
-export function signIn(email, password) {
-  return supabase.auth.signInWithPassword({ email, password });
+export async function signIn(email, password) {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    return data;
 }
 
-export function signUp(email, password) {
-  return supabase.auth.signUp({ email, password });
+export async function signUp(email, password) {
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if (error) throw error;
+    return data;
 }
 
-export function signOut() {
-  return supabase.auth.signOut();
+export async function signOut() {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+}
+
+export async function getUser() {
+    const { data, error } = await supabase.auth.getUser();
+    if (error) throw error;
+    return data;
+}
+
+export function onAuthStateChange(callback) {
+    return supabase.auth.onAuthStateChange((event, session) => {
+        callback(event, session);
+    });
 }

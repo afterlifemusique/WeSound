@@ -30,6 +30,7 @@ watch(songs, (newSongs) => {
 
     <!-- Navigation Sidebar -->
     <nav class="sidebar">
+      <router-link to="/" class="logo">WeSound</router-link>
       <router-link to="/" class="nav-item">Home</router-link>
       <router-link to="/feed" class="nav-item">Feed</router-link>
       <router-link to="/messages" class="nav-item">Messages</router-link>
@@ -114,6 +115,21 @@ html, body {
   background: #8f6c28;
   color: black;
   font-weight: bold;
+}
+
+/* Logo */
+.logo {
+  background-color: #111111;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  color: #ffffff;
+  text-decoration: solid;
+  font-size: 24px;
+  transition: all 0.2s ease;
+  justify-content: center;
 }
 
 /* Page content pushed right */
