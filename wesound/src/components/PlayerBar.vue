@@ -11,6 +11,11 @@
     </div>
 
     <div class="controls">
+      <button @click="player.toggleMode()" class="control-btn">
+        <span v-if="player.mode === 'repeat-one'" class="glyphicon glyphicon-play">🔂</span>
+        <span v-else-if="player.mode === 'shuffle'">🔀</span>
+        <span v-else>🔁</span>
+      </button>
       <button @click="player.restart()" class="control-btn">⏮</button>
       <button @click="toggle" class="control-btn">
         {{ playing ? "⏸" : "▶" }}
