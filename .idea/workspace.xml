@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="12af6c97-39af-4e50-99da-8e99099d74ae" name="Changes" comment="repeat one, repeat all and shuffle with shuffle queue" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Vue Composition API Component" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;afterlifemusique&quot;
+  }
+}</component>
+  <component name="GithubDefaultAccount">
+    <option name="defaultAccountId" value="71dd3258-ac03-49d1-a9f0-421d811dad58" />
+  </component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/afterlifemusique/WeSound.git&quot;,
+    &quot;accountId&quot;: &quot;71dd3258-ac03-49d1-a9f0-421d811dad58&quot;
+  }
+}</component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 2
+}</component>
+  <component name="ProjectId" id="3644f49gEBM4Ydq5uTXw65HYj8j" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;SHELLCHECK.PATH&quot;: &quot;I do mind&quot;,
+    &quot;Shell Script.setup-wesound.sh.executor&quot;: &quot;Run&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;org.jetbrains.plugins.github.ui.GithubSettingsConfigurable&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;/Applications/WebStorm.app/Contents/plugins/javascript-plugin/jsLanguageServicesImpl/external&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  },
+  &quot;keyToStringList&quot;: {
+    &quot;vue.recent.templates&quot;: [
+      &quot;Vue Composition API Component&quot;
+    ]
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/wesound/src/views" />
+      <recent name="$PROJECT_DIR$/wesound/src/store" />
+      <recent name="$PROJECT_DIR$/wesound/src/router" />
+      <recent name="$PROJECT_DIR$/wesound/src/composables" />
+      <recent name="$PROJECT_DIR$/wesound/src/components" />
+    </key>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-a71380e98a7c-JavaScript-WS-252.28238.10" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="12af6c97-39af-4e50-99da-8e99099d74ae" name="Changes" comment="" />
+      <created>1764252610598</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1764252610598</updated>
+      <workItem from="1764252611891" duration="30469000" />
+    </task>
+    <task id="LOCAL-00001" summary="missing pages added">
+      <option name="closed" value="true" />
+      <created>1764258505116</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1764258505116</updated>
+    </task>
+    <task id="LOCAL-00002" summary="music mapping and api itunes">
+      <option name="closed" value="true" />
+      <created>1764262913090</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1764262913090</updated>
+    </task>
+    <task id="LOCAL-00003" summary="music mapping and api itunes">
+      <option name="closed" value="true" />
+      <created>1764262986848</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1764262986848</updated>
+    </task>
+    <task id="LOCAL-00004" summary="music catalog load">
+      <option name="closed" value="true" />
+      <created>1764263656466</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1764263656466</updated>
+    </task>
+    <task id="LOCAL-00005" summary="music player functional">
+      <option name="closed" value="true" />
+      <created>1764264185437</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1764264185437</updated>
+    </task>
+    <task id="LOCAL-00006" summary="home is root">
+      <option name="closed" value="true" />
+      <created>1764264720066</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1764264720066</updated>
+    </task>
+    <task id="LOCAL-00007" summary="songs horizontal wrap">
+      <option name="closed" value="true" />
+      <created>1764265115788</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1764265115788</updated>
+    </task>
+    <task id="LOCAL-00008" summary="restart button">
+      <option name="closed" value="true" />
+      <created>1764266069075</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1764266069075</updated>
+    </task>
+    <task id="LOCAL-00009" summary="next button">
+      <option name="closed" value="true" />
+      <created>1764267399440</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1764267399440</updated>
+    </task>
+    <task id="LOCAL-00010" summary="restart button">
+      <option name="closed" value="true" />
+      <created>1764267772320</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1764267772320</updated>
+    </task>
+    <task id="LOCAL-00011" summary="song button play whole div">
+      <option name="closed" value="true" />
+      <created>1764271673857</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1764271673857</updated>
+    </task>
+    <task id="LOCAL-00012" summary="left sidebar nav">
+      <option name="closed" value="true" />
+      <created>1764272520459</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1764272520459</updated>
+    </task>
+    <task id="LOCAL-00013" summary="player bar yt studio css">
+      <option name="closed" value="true" />
+      <created>1764272800466</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1764272800466</updated>
+    </task>
+    <task id="LOCAL-00014" summary="song card yt studio css">
+      <option name="closed" value="true" />
+      <created>1764272944113</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1764272944113</updated>
+    </task>
+    <task id="LOCAL-00015" summary="restart/previous button">
+      <option name="closed" value="true" />
+      <created>1764273067389</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1764273067389</updated>
+    </task>
+    <task id="LOCAL-00016" summary="home css">
+      <option name="closed" value="true" />
+      <created>1764273908179</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1764273908179</updated>
+    </task>
+    <task id="LOCAL-00017" summary="home css">
+      <option name="closed" value="true" />
+      <created>1764277240323</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1764277240323</updated>
+    </task>
+    <task id="LOCAL-00018" summary="search bar disabled">
+      <option name="closed" value="true" />
+      <created>1764278771828</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1764278771828</updated>
+    </task>
+    <task id="LOCAL-00019" summary="search bar enabled">
+      <option name="closed" value="true" />
+      <created>1764280760485</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1764280760485</updated>
+    </task>
+    <task id="LOCAL-00020" summary="search bar css">
+      <option name="closed" value="true" />
+      <created>1764282188986</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1764282188986</updated>
+    </task>
+    <task id="LOCAL-00021" summary="repeat one, repeat all and shuffle with shuffle queue">
+      <option name="closed" value="true" />
+      <created>1764355786050</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1764355786050</updated>
+    </task>
+    <option name="localTasksCounter" value="22" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="UnknownFeatures">
+    <option featureType="com.intellij.fileTypeFactory" implementationName=".env" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="missing pages added" />
+    <MESSAGE value="music mapping and api itunes" />
+    <MESSAGE value="music catalog load" />
+    <MESSAGE value="music player functional" />
+    <MESSAGE value="home is root" />
+    <MESSAGE value="songs horizontal wrap" />
+    <MESSAGE value="next button" />
+    <MESSAGE value="restart button" />
+    <MESSAGE value="song button play whole div" />
+    <MESSAGE value="left sidebar nav" />
+    <MESSAGE value="player bar yt studio css" />
+    <MESSAGE value="song card yt studio css" />
+    <MESSAGE value="restart/previous button" />
+    <MESSAGE value="home css" />
+    <MESSAGE value="search bar disabled" />
+    <MESSAGE value="search bar enabled" />
+    <MESSAGE value="search bar css" />
+    <MESSAGE value="repeat one, repeat all and shuffle with shuffle queue" />
+    <option name="LAST_COMMIT_MESSAGE" value="repeat one, repeat all and shuffle with shuffle queue" />
+  </component>
+</project>
