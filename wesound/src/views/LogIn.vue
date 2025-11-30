@@ -10,7 +10,7 @@
 <script setup>
 import { ref } from "vue";
 import { signIn } from "../api/auth.js";
-import { useUserStore } from "../stores/user.js";
+import { useUserStore } from "../store/user.js";
 
 const email = ref("");
 const password = ref("");
