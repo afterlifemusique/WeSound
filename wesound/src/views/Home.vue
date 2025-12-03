@@ -25,6 +25,7 @@ const player = usePlayer();
         <div class="song-meta">
           <h1>{{ song.title }}</h1>
           <p class="artist">{{ song.artist }}</p>
+          <p>{{ song.id }}</p>
         </div>
       </button>
     </div>

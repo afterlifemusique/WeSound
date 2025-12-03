@@ -5,7 +5,8 @@ const routes = [
   { path: '/login', name: 'Login', component: () => import("../views/LogIn.vue") },
   { path: "/feed", name: "Feed", component: () => import("../views/Feed.vue") },
   { path: "/messages", name: "Messages", component: () => import("../views/Messages.vue") },
-  { path: "/profile/:id", name: "Profile", component: () => import("../views/Profile.vue") }
+  { path: "/profile/:id", name: "Profile", component: () => import("../views/Profile.vue") },
+  { path: "/song/:id", name: "Song", component: () => import("../views/SongDetail.vue") },
 ];
 
 const router = createRouter({

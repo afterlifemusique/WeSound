@@ -82,7 +82,7 @@ html, body {
   left: 0;
   top: 0;
   bottom: 0;
-  width: 220px;
+  width: 100px;
   background: #121212;
   padding: 20px 12px;
   display: flex;
@@ -134,7 +134,7 @@ html, body {
 
 /* Page content pushed right */
 .main-content {
-  margin-left: 230px;
+  margin-left: 140px;
   padding: 20px;
   padding-top: 80px; /* header height */
   padding-bottom: 80px; /* player height */
