@@ -8,11 +8,11 @@
         <span v-else-if="player.mode === 'shuffle'">🔀</span>
         <span v-else>🔁</span>
       </button>
-      <button @click="player.restart()" class="control-btn">⏮</button>
+      <button @click="handlePrevious" class="control-btn">⏮</button>
       <button @click="toggle" class="control-btn">
         {{ playing ? "⏸" : "▶" }}
       </button>
-      <button @click="player.next()" class="control-btn">⏭</button>
+      <button @click="handleNext" class="control-btn">⏭</button>
     </div>
   </div>
 </template>
@@ -21,13 +21,23 @@
 <script setup>
 import { storeToRefs } from "pinia";
 import { usePlayer } from "../store/player";
+import router from "../router/index.js";
 
 const player = usePlayer();
-const { playing } = storeToRefs(player);
+const { playing, track } = storeToRefs(player);
 
 const toggle = () =>
     playing.value ? player.pause() : player.play();
 
+function handlePrevious() {
+  player.restart()
+  router.replace(`/song/${track.value.id}`);
+}
+
+function handleNext() {
+  player.next()
+  router.replace(`/song/${track.value.id}`);
+}
 </script>
 
 <style scoped>

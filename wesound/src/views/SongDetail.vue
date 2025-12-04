@@ -4,16 +4,23 @@ import { useRoute } from "vue-router";
 import { useITunesSong } from "../composables/useITunesSong";
 import { usePlayer } from "../store/player";
 import PlayerBar_SongDetail from "../components/PlayerBar_SongDetail.vue";
+import { watch } from "vue";
 
 const route = useRoute();
-const id = route.params.id;
 
 const { song, loading, error, fetchSong } = useITunesSong();
 const player = usePlayer();
 
 onMounted(() => {
-  fetchSong(id);
+  fetchSong(route.params.id);
 });
+
+watch(
+    () => route.params.id,
+    (newId) => {
+      fetchSong(newId);   // reload correct song
+    }
+);
 </script>
 
 <template>
