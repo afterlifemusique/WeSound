@@ -1,11 +1,13 @@
 <script setup>
 import { watch } from "vue";
-import { RouterView } from "vue-router";
+import { RouterView, useRoute } from "vue-router";
 import PlayerBar from "./components/PlayerBar.vue";
 import SearchBar from "./components/SearchBar.vue";
 
 import { useITunes } from "./composables/useITunes";
 import { usePlayer } from "./store/player";
+
+const route = useRoute();
 
 const { songs, searchSongs, loading } = useITunes();
 const player = usePlayer();
@@ -44,7 +46,7 @@ watch(songs, (newSongs) => {
     </main>
 
     <!-- Global Player -->
-    <PlayerBar />
+    <PlayerBar v-if="!route.path.startsWith('/song/')" />
   </div>
 </template>
 
