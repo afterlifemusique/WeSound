@@ -21,6 +21,24 @@ watch(
       fetchSong(newId);   // reload correct song
     }
 );
+
+watch(song, (s) => {
+  if (!s) return;
+
+  const player = usePlayer();
+
+  // load ONLY this song as "playlist"
+  player.playlist = [s];
+  player.currentIndex = 0;
+  player.track = s;
+
+  if (!player.audio)
+    player.audio = new Audio();
+
+  player.audio.src = s.url;
+  player.audio.load();
+});
+
 </script>
 
 <template>
@@ -47,21 +65,21 @@ watch(
       <div class="right-side">
         <div class="rs-navbar">
           <router-link
-              :to="`/song/${id}/comments`"
+              :to="`/song/${route.params.id}/comments`"
               class="nav-item"
           >
             Comments
           </router-link>
 
           <router-link
-              :to="`/song/${id}/covers`"
+              :to="`/song/${route.params.id}/covers`"
               class="nav-item"
           >
             Covers
           </router-link>
 
           <router-link
-              :to="`/song/${id}/remixes`"
+              :to="`/song/${route.params.id}/remixes`"
               class="nav-item"
           >
             Remixes
