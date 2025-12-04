@@ -1,15 +1,14 @@
 <script setup>
-import { onMounted } from "vue";
+import { ref, watch, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useITunesSong } from "../composables/useITunesSong";
 import { usePlayer } from "../store/player";
 import PlayerBar_SongDetail from "../components/PlayerBar_SongDetail.vue";
-import { watch } from "vue";
+import Queue from "@/components/Queue.vue";
 
 const route = useRoute();
 
 const { song, loading, error, fetchSong } = useITunesSong();
-const player = usePlayer();
 
 onMounted(() => {
   fetchSong(route.params.id);
@@ -27,10 +26,19 @@ watch(song, (s) => {
 
   const player = usePlayer();
 
-  // load ONLY this song as "playlist"
-  player.playlist = [s];
-  player.currentIndex = 0;
   player.track = s;
+
+  // If the track is inside playlist, move the index
+  const i = player.playlist.findIndex(t => t.id === s.id);
+  if (i !== -1) {
+    player.currentIndex = i;
+  }
+
+  // If the song is not in the playlist → add it without clearing playlist
+  else {
+    player.playlist.push(s);
+    player.currentIndex = player.playlist.length - 1;
+  }
 
   if (!player.audio)
     player.audio = new Audio();
@@ -38,6 +46,12 @@ watch(song, (s) => {
   player.audio.src = s.url;
   player.audio.load();
 });
+
+const activeTab = ref(null);
+
+function setActiveTab(tabName) {
+  activeTab.value = tabName;
+}
 
 </script>
 
@@ -63,9 +77,22 @@ watch(song, (s) => {
       </div>
       <div class="right-side">
         <div class="rs-navbar">
+          <button
+              class="nav-item"
+              :class="{ active: activeTab === 'queue' }"
+              @click="setActiveTab('queue')"
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+              <rect x="3" y="5" width="12" height="2" rx="1"/>
+              <rect x="3" y="10" width="12" height="2" rx="1"/>
+              <rect x="3" y="15" width="8"  height="2" rx="1"/>
+              <polygon points="19,8 19,16 23,12" />
+            </svg>
+          </button>
           <router-link
               :to="`/song/${route.params.id}/comments`"
               class="nav-item"
+              active-class="active"
           >
             Comments
           </router-link>
@@ -73,6 +100,7 @@ watch(song, (s) => {
           <router-link
               :to="`/song/${route.params.id}/covers`"
               class="nav-item"
+              active-class="active"
           >
             Covers
           </router-link>
@@ -80,12 +108,22 @@ watch(song, (s) => {
           <router-link
               :to="`/song/${route.params.id}/remixes`"
               class="nav-item"
+              active-class="active"
           >
             Remixes
           </router-link>
         </div>
 
-        <div class="rs-content"></div>
+        <div class="rs-content">
+          <div v-if="activeTab === 'queue'">
+            <keep-alive>
+              <Queue />
+            </keep-alive>
+          </div>
+          <div v-else>
+            <p>Select a tab to see content.</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -98,10 +136,10 @@ watch(song, (s) => {
   width: 100%;
 }
 
-/* NEW: This is the horizontal container */
 .content-wrapper {
   display: flex;
   width: 100%;
+  min-height: 0;       /* required for nested scrolling */
 }
 
 .left-side {
@@ -109,12 +147,12 @@ watch(song, (s) => {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  width: 50%;
+  width: 45%;
 }
 
 .cover {
   width: 100%;
-  max-width: 750px;
+  max-width: 900px;
   border-radius: 12px;
 }
 
@@ -130,10 +168,15 @@ watch(song, (s) => {
 
 /* Right column */
 .right-side {
-  width: 50%;
+  position: fixed;
+  width: 48%;
   display: flex;
   flex-direction: column;
   gap: 20px;
+  min-height: 0;           /* allow children to shrink so scroll works */
+  right: 0;
+  top: 16px;
+  margin-right: 30px;
 }
 
 .rs-navbar{
@@ -146,18 +189,29 @@ watch(song, (s) => {
   padding: 12px 20px;
   background: gainsboro;
   border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   text-decoration: none;
   color: black;
   font-weight: 600;
   transition: 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
 }
 
-.nav-item:hover {
+.nav-item:hover,
+.nav-item.active {
   background: #272727;
   color: white;
   transform: translateY(-2px);
+}
+
+.rs-content {
+  flex: 1;
+  max-height: 1000px;
+  overflow-y: hidden;       /* prevent double scrolling */
 }
 
 </style>

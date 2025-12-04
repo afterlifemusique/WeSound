@@ -74,7 +74,7 @@ html, body {
   position: fixed;
   top: 15px;
   left: 50px;
-  right: 0;
+  right: 1050px;
   z-index: 50;
 }
 
