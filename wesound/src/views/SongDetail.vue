@@ -60,7 +60,6 @@ watch(song, (s) => {
           <h2>{{ song.artist }}</h2>
           <p>{{ song.album }}</p>
         </div>
-        <button class="like-btn" @click="player.like(song)">Like</button>
       </div>
       <div class="right-side">
         <div class="rs-navbar">

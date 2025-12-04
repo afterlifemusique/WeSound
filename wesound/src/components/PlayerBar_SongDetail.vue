@@ -13,6 +13,7 @@
         {{ playing ? "⏸" : "▶" }}
       </button>
       <button @click="handleNext" class="control-btn">⏭</button>
+      <HeartLike :song="song" @error="onLikeError" @update:liked="onLiked" />
     </div>
   </div>
 </template>
@@ -22,6 +23,7 @@
 import { storeToRefs } from "pinia";
 import { usePlayer } from "../store/player";
 import router from "../router/index.js";
+import HeartLike from "@/components/HeartLike.vue";
 
 const player = usePlayer();
 const { playing, track } = storeToRefs(player);
@@ -38,6 +40,10 @@ function handleNext() {
   player.next()
   router.replace(`/song/${track.value.id}`);
 }
+
+function onLikeError(e) { console.error(e); }
+// optional: react to like change
+function onLiked(val) { /* update local state if needed */ }
 </script>
 
 <style scoped>

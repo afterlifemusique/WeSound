@@ -24,6 +24,7 @@
         {{ playing ? "⏸" : "▶" }}
       </button>
       <button @click="player.next()" class="control-btn">⏭</button>
+      <HeartLike :song="song" @error="onLikeError" @update:liked="onLiked" />
     </div>
   </div>
 </template>
@@ -33,6 +34,7 @@
 import { storeToRefs } from "pinia";
 import { usePlayer } from "../store/player";
 import { useRouter } from "vue-router";
+import HeartLike from "@/components/HeartLike.vue";
 
 const router = useRouter();
 
