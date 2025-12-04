@@ -3,8 +3,11 @@
       v-if="track"
       class="playerbar"
   >
-    <img :src="track.cover" :alt="track.title" class="thumb" />
-
+    <button
+      @click="goToDetail"
+    >
+      <img :src="track.cover" :alt="track.title" class="thumb" />
+    </button>
     <div class="info">
       <h3>{{ track.title }}</h3>
       <p>{{ track.artist }}</p>
@@ -29,6 +32,9 @@
 <script setup>
 import { storeToRefs } from "pinia";
 import { usePlayer } from "../store/player";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
 
 const player = usePlayer();
 const { track, playing } = storeToRefs(player);
@@ -36,6 +42,10 @@ const { track, playing } = storeToRefs(player);
 const toggle = () =>
     playing.value ? player.pause() : player.play();
 
+function goToDetail() {
+  if (!track.value) return;
+  router.push(`/song/${track.value.id}/`);
+}
 </script>
 
 <style scoped>
