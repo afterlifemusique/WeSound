@@ -45,10 +45,10 @@ const onSearch = (e) => {
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  background-color: #282828; /* Spotify dark background */
+  background-color: #282828;
   border-radius: 4px;
   max-width: 500px;
-  margin: 0 auto;
+  margin-left: 140px;
   box-shadow: 0 2px 4px rgb(0 0 0 / 0.5);
 }
 
