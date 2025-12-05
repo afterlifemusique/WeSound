@@ -82,7 +82,11 @@ function removeSong(index) {
   min-height: 0;              /* required for flex scroll containers */
 }
 
-h3 { margin-top: 0}
+h3 {
+  margin-top: 0;
+  display: flex;
+  justify-content: center;
+}
 
 .queue-label {
   padding-top: 20px;
@@ -92,7 +96,10 @@ h3 { margin-top: 0}
   position: sticky;
   top: 0;
   z-index: 10;
-  background: #121212;
+  background: transparent;
+  width: 100px;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .queue-wrapper::-webkit-scrollbar {
