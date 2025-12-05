@@ -31,15 +31,26 @@ const { playing, track } = storeToRefs(player);
 const toggle = () =>
     playing.value ? player.pause() : player.play();
 
-function handlePrevious() {
-  player.restart()
-  router.replace(`/song/${track.value.id}`);
+async function handlePrevious() {
+  player.restart();
+
+  await router.replace(`/song/${track.value.id}`);
+
+  setTimeout(() => {
+    player.play();
+  }, 50);
 }
 
-function handleNext() {
-  player.next()
-  router.replace(`/song/${track.value.id}`);
+async function handleNext() {
+  player.next();
+
+  await router.replace(`/song/${track.value.id}`);
+
+  setTimeout(() => {
+    player.play();
+  }, 50);
 }
+
 
 function onLikeError(e) { console.error(e); }
 // optional: react to like change

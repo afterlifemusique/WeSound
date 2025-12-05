@@ -132,7 +132,7 @@ function setActiveTab(tabName) {
 
 <style scoped>
 .main-container {
-  min-height: 100vh;
+  height: 10vh;
   width: 100%;
 }
 
@@ -154,16 +154,6 @@ function setActiveTab(tabName) {
   width: 100%;
   max-width: 900px;
   border-radius: 12px;
-}
-
-.like-btn {
-  padding: 12px 20px;
-  background: #8f6c28;
-  border: none;
-  color: black;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
 }
 
 /* Right column */
