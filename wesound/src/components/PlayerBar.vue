@@ -29,6 +29,17 @@
         <button @click="player.next()" class="control-btn">⏭</button>
         <HeartLike :song="song" @error="onLikeError" @update:liked="onLiked" />
       </div>
+      <div class="progress-wrapper">
+        <span class="time">{{ formatTime(player.currentTime) }}</span>
+        <input
+            type="range"
+            class="progress-bar"
+            :max="player.duration"
+            :value="player.currentTime"
+            @input="player.seekTo(Number($event.target.value))"
+        />
+        <span class="time">{{ formatTime(player.duration) }}</span>
+      </div>
     </div>
     <div class="right-side">
       <button
@@ -63,6 +74,13 @@ const { track, playing } = storeToRefs(player);
 const toggle = () =>
     playing.value ? player.pause() : player.play();
 
+const formatTime = (sec) => {
+  if (!sec) return "0:00";
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60).toString().padStart(2, "0");
+  return `${m}:${s}`;
+};
+
 function goToDetail() {
   if (!track.value) return;
   router.push(`/song/${track.value.id}/`);
@@ -86,6 +104,7 @@ function goToDetail() {
   width: 30%;
 }
 
+/* LEFT */
 .left-side {
   display: flex;
   align-items: center;
@@ -112,6 +131,7 @@ function goToDetail() {
   padding: 0;
 }
 
+/* MID */
 .info {
   flex: 1;
   display: flex;
@@ -151,6 +171,36 @@ function goToDetail() {
   color: #000;
 }
 
+.progress-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 4px;
+  appearance: none;
+  background: #ccc;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.progress-bar::-webkit-slider-thumb {
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #000;
+}
+
+.time {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* RIGHT */
 .queue {
   padding: 12px 20px;
   background: transparent;

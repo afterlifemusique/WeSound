@@ -7,6 +7,8 @@ export const usePlayer = defineStore("player", {
         track: null,
         playing: false,
         audio: null,
+        currentTime: 0,
+        duration: 0,
 
         // modes: "repeat-one" | "shuffle" | "repeat-all"
         mode: "repeat-all",
@@ -176,10 +178,33 @@ export const usePlayer = defineStore("player", {
             this.playing = true;
         },
 
+        seekTo(time) {
+            if (!this.audio) return;
+            this.audio.currentTime = time;
+            this.currentTime = time;
+        },
+
+        initAudio() {
+            if (this.audio) return;  // don't recreate
+
+            this.audio = new Audio();
+
+            // fires once per track (metadata loaded)
+            this.audio.onloadedmetadata = () => {
+                this.duration = this.audio.duration || 0;
+            };
+
+            // fires continuously during playback
+            this.audio.ontimeupdate = () => {
+                this.currentTime = this.audio.currentTime;
+            };
+        },
+
         _loadTrack(track) {
-            if (!this.audio) this.audio = new Audio();
+            this.initAudio();     // ensure audio exists + handlers attached
+
             this.audio.src = track.url;
-            this.audio.load();
+            this.audio.load();    // will trigger onloadedmetadata → updates duration
         },
 
         // Build queue of indices not yet played in this shuffle round.
