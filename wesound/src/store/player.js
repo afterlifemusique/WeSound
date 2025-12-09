@@ -205,6 +205,14 @@ export const usePlayer = defineStore("player", {
 
             this.audio.src = track.url;
             this.audio.load();    // will trigger onloadedmetadata → updates duration
+
+            this.audio.onloadedmetadata = () => {
+                this.duration = this.audio.duration;
+            };
+
+            this.audio.ontimeupdate = () => {
+                this.currentTime = this.audio.currentTime;
+            };
         },
 
         // Build queue of indices not yet played in this shuffle round.

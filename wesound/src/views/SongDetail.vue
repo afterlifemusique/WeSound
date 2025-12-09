@@ -40,11 +40,10 @@ watch(song, (s) => {
     player.currentIndex = player.playlist.length - 1;
   }
 
-  if (!player.audio)
-    player.audio = new Audio();
+  player._loadTrack(s)
 
-  player.audio.src = s.url;
-  player.audio.load();
+  // optional autoplay
+  setTimeout(() => player.play(), 50);
 });
 
 const activeTab = ref(null);
