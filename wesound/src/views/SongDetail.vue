@@ -141,6 +141,7 @@ function setActiveTab(tabName) {
   min-height: 0;       /* required for nested scrolling */
 }
 
+/* LEFT */
 .left-side {
   display: flex;
   flex-direction: column;
@@ -155,7 +156,7 @@ function setActiveTab(tabName) {
   border-radius: 12px;
 }
 
-/* Right column */
+/* RIGHT */
 .right-side {
   position: fixed;
   width: 48%;
