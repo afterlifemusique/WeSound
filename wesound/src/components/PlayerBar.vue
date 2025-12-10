@@ -11,7 +11,12 @@
         <img :src="track.cover" :alt="track.title" class="thumb" />
       </button>
       <div class="info">
-        <h3>{{ track.title }}</h3>
+        <button
+            @click="goToDetail"
+            class="title-button"
+        >
+          <h3>{{ track.title }}</h3>
+        </button>
         <p>{{ track.artist }}</p>
       </div>
     </div>
@@ -144,6 +149,13 @@ function goToDetail() {
   font-weight: 600;
   margin: 0;
   justify-content: left;
+}
+
+.title-button{
+  background: transparent;
+  cursor: pointer;
+  border: none;
+  padding: 0;
 }
 
 .info p {
