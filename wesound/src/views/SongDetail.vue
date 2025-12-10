@@ -26,24 +26,24 @@ watch(song, (s) => {
 
   const player = usePlayer();
 
-  player.track = s;
+  // only reload if the track changed
+  if (player.track?.id !== s.id) {
 
-  // If the track is inside playlist, move the index
-  const i = player.playlist.findIndex(t => t.id === s.id);
-  if (i !== -1) {
-    player.currentIndex = i;
+    // update playlist + index
+    const i = player.playlist.findIndex(t => t.id === s.id);
+    if (i !== -1) {
+      player.currentIndex = i;
+    } else {
+      player.playlist.push(s);
+      player.currentIndex = player.playlist.length - 1;
+    }
+
+    player.track = s;
+    player._loadTrack(s);
+    player.play(); // autoplay NEW songs only
   }
 
-  // If the song is not in the playlist → add it without clearing playlist
-  else {
-    player.playlist.push(s);
-    player.currentIndex = player.playlist.length - 1;
-  }
-
-  player._loadTrack(s)
-
-  // optional autoplay
-  setTimeout(() => player.play(), 50);
+  // If same song → DO NOTHING
 });
 
 const activeTab = ref(null);
