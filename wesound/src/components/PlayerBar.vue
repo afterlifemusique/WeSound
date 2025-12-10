@@ -98,10 +98,10 @@ function goToDetail() {
   color: #111;
   display: flex;
   align-items: center;
-  padding: 0 16px;
-  gap: 16px;
   z-index: 1000;
-  width: 30%;
+  width: 35%;
+  border-radius: 40px;
+  justify-content: space-around;
 }
 
 /* LEFT */
@@ -111,6 +111,7 @@ function goToDetail() {
   padding: 0 16px;
   gap: 16px;
   left: 0;
+  width: 25%;
 }
 
 .thumb {
@@ -131,7 +132,6 @@ function goToDetail() {
   padding: 0;
 }
 
-/* MID */
 .info {
   flex: 1;
   display: flex;
@@ -143,6 +143,7 @@ function goToDetail() {
   font-size: 15px;
   font-weight: 600;
   margin: 0;
+  justify-content: left;
 }
 
 .info p {
@@ -151,10 +152,16 @@ function goToDetail() {
   margin: 0;
 }
 
+/* MID */
+.middle{
+  width: 50%;
+}
+
 .controls {
   display: flex;
   align-items: center;
   gap: 12px;
+  justify-content: center;
 }
 
 .control-btn {
@@ -169,6 +176,7 @@ function goToDetail() {
 
 .control-btn:hover {
   color: #000;
+  cursor: pointer;
 }
 
 .progress-wrapper {
@@ -202,11 +210,15 @@ function goToDetail() {
 }
 
 /* RIGHT */
+.right-side {
+  margin-right: 20px;
+}
+
 .queue {
   padding: 12px 20px;
-  background: transparent;
+  background: #eaeaea;
   border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   cursor: pointer;
   text-decoration: none;
   color: black;

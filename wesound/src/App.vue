@@ -143,10 +143,4 @@ html, body {
   height: calc(100vh - 60px - 60px); /* viewport minus header + player */
   overflow-y: auto;
 }
-
-/*PlayerBar*/
-.player-bar {
-  margin-left: 220px; /* same width as sidebar */
-  padding: 20px;
-}
 </style>
