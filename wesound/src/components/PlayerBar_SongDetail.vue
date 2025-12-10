@@ -131,6 +131,7 @@ function onLiked(val) { /* update local state if needed */ }
   cursor: pointer;
   color: #aaa;
   transition: color 0.15s;
+  width: 40px;
 }
 
 .control-btn:hover {

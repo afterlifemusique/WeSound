@@ -182,13 +182,9 @@ function goToDetail() {
   border: none;
   background: transparent;
   cursor: pointer;
-  color: #333;
-  transition: color 0.15s;
-}
-
-.control-btn:hover {
   color: #000;
-  cursor: pointer;
+  transition: color 0.15s;
+  width: 40px;
 }
 
 .progress-wrapper {
@@ -228,11 +224,9 @@ function goToDetail() {
 
 .queue {
   padding: 12px 20px;
-  background: #eaeaea;
   border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  cursor: pointer;
   text-decoration: none;
+  background: transparent;
   color: black;
   font-weight: 600;
   transition: 0.2s ease;
@@ -241,5 +235,10 @@ function goToDetail() {
   gap: 6px;
   border: none;
   right: 0;
+  cursor: pointer;
+}
+
+.queue:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 </style>
