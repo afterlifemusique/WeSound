@@ -192,7 +192,8 @@ function goToDetail() {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: #000;
+  background: #ffffff;
+  border: 1px solid #c8c8c8;
 }
 
 .time {

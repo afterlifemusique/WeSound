@@ -140,7 +140,7 @@ function onLiked(val) { /* update local state if needed */ }
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: #000;
+  background: #ffffff;
 }
 
 .time {
