@@ -15,6 +15,17 @@
       <button @click="handleNext" class="control-btn">⏭</button>
       <HeartLike :song="song" @error="onLikeError" @update:liked="onLiked" />
     </div>
+    <div class="progress-wrapper">
+      <span class="time">{{ formatTime(player.currentTime) }}</span>
+      <input
+          type="range"
+          class="progress-bar"
+          :max="player.duration"
+          :value="player.currentTime"
+          @input="player.seekTo(Number($event.target.value))"
+      />
+      <span class="time">{{ formatTime(player.duration) }}</span>
+    </div>
   </div>
 </template>
 
@@ -51,6 +62,12 @@ async function handleNext() {
   }, 50);
 }
 
+const formatTime = (sec) => {
+  if (!sec) return "0:00";
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60).toString().padStart(2, "0");
+  return `${m}:${s}`;
+};
 
 function onLikeError(e) { console.error(e); }
 // optional: react to like change
@@ -100,5 +117,35 @@ function onLiked(val) { /* update local state if needed */ }
 
 .control-btn:hover {
   color: #000;
+}
+
+.progress-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 4px;
+  appearance: none;
+  background: #ccc;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.progress-bar::-webkit-slider-thumb {
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+.time {
+  font-size: 12px;
+  opacity: 0.7;
+  color: #aaa;
 }
 </style>

@@ -3,29 +3,59 @@
       v-if="track"
       class="playerbar"
   >
-    <button
-      @click="goToDetail"
-    >
-      <img :src="track.cover" :alt="track.title" class="thumb" />
-    </button>
-    <div class="info">
-      <h3>{{ track.title }}</h3>
-      <p>{{ track.artist }}</p>
+    <div class="left-side">
+      <button
+          @click="goToDetail"
+          class="thumb-button"
+      >
+        <img :src="track.cover" :alt="track.title" class="thumb" />
+      </button>
+      <div class="info">
+        <h3>{{ track.title }}</h3>
+        <p>{{ track.artist }}</p>
+      </div>
+    </div>
+    <div class="middle">
+      <div class="controls">
+        <button @click="player.toggleMode()" class="control-btn">
+          <span v-if="player.mode === 'repeat-one'" class="glyphicon glyphicon-play">🔂</span>
+          <span v-else-if="player.mode === 'shuffle'">🔀</span>
+          <span v-else>🔁</span>
+        </button>
+        <button @click="player.restart()" class="control-btn">⏮</button>
+        <button @click="toggle" class="control-btn">
+          {{ playing ? "⏸" : "▶" }}
+        </button>
+        <button @click="player.next()" class="control-btn">⏭</button>
+        <HeartLike :song="song" @error="onLikeError" @update:liked="onLiked" />
+      </div>
+      <div class="progress-wrapper">
+        <span class="time">{{ formatTime(player.currentTime) }}</span>
+        <input
+            type="range"
+            class="progress-bar"
+            :max="player.duration"
+            :value="player.currentTime"
+            @input="player.seekTo(Number($event.target.value))"
+        />
+        <span class="time">{{ formatTime(player.duration) }}</span>
+      </div>
+    </div>
+    <div class="right-side">
+      <button
+          class="queue"
+          :class="{ active: activeTab === 'queue' }"
+          @click="setActiveTab('queue')"
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+          <rect x="3" y="5" width="12" height="2" rx="1"/>
+          <rect x="3" y="10" width="12" height="2" rx="1"/>
+          <rect x="3" y="15" width="8"  height="2" rx="1"/>
+          <polygon points="19,8 19,16 23,12" />
+        </svg>
+      </button>
     </div>
 
-    <div class="controls">
-      <button @click="player.toggleMode()" class="control-btn">
-        <span v-if="player.mode === 'repeat-one'" class="glyphicon glyphicon-play">🔂</span>
-        <span v-else-if="player.mode === 'shuffle'">🔀</span>
-        <span v-else>🔁</span>
-      </button>
-      <button @click="player.restart()" class="control-btn">⏮</button>
-      <button @click="toggle" class="control-btn">
-        {{ playing ? "⏸" : "▶" }}
-      </button>
-      <button @click="player.next()" class="control-btn">⏭</button>
-      <HeartLike :song="song" @error="onLikeError" @update:liked="onLiked" />
-    </div>
   </div>
 </template>
 
@@ -44,6 +74,13 @@ const { track, playing } = storeToRefs(player);
 const toggle = () =>
     playing.value ? player.pause() : player.play();
 
+const formatTime = (sec) => {
+  if (!sec) return "0:00";
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60).toString().padStart(2, "0");
+  return `${m}:${s}`;
+};
+
 function goToDetail() {
   if (!track.value) return;
   router.push(`/song/${track.value.id}/`);
@@ -54,8 +91,7 @@ function goToDetail() {
 .playerbar {
   position: fixed;
   bottom: 0;
-  left: 250px; /* align with your sidebar */
-  right: 0;
+  left: 700px;
   height: 64px;
   background: #f8f8f8;
   border-top: 1px solid #ddd;
@@ -65,6 +101,16 @@ function goToDetail() {
   padding: 0 16px;
   gap: 16px;
   z-index: 1000;
+  width: 30%;
+}
+
+/* LEFT */
+.left-side {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 16px;
+  left: 0;
 }
 
 .thumb {
@@ -74,6 +120,18 @@ function goToDetail() {
   border-radius: 4px;
 }
 
+.thumb-button {
+  background: gainsboro;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: 0.2s ease;
+  border: none;
+  right: 0;
+  padding: 0;
+}
+
+/* MID */
 .info {
   flex: 1;
   display: flex;
@@ -111,5 +169,53 @@ function goToDetail() {
 
 .control-btn:hover {
   color: #000;
+}
+
+.progress-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 4px;
+  appearance: none;
+  background: #ccc;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.progress-bar::-webkit-slider-thumb {
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid #c8c8c8;
+}
+
+.time {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* RIGHT */
+.queue {
+  padding: 12px 20px;
+  background: transparent;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  text-decoration: none;
+  color: black;
+  font-weight: 600;
+  transition: 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  right: 0;
 }
 </style>
