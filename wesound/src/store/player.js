@@ -84,7 +84,7 @@ export const usePlayer = defineStore("player", {
             if (song) {
                 const index = this.playlist.findIndex(s => s.id === song.id);
                 this.currentIndex = index !== -1 ? index : this.playlist.length - 1;
-                this.track = this.playlist[this.currentIndex];
+                this.track = this.normalizeTrack(this.playlist[this.currentIndex]);
                 this._loadTrack(this.track);
             }
 
