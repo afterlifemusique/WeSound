@@ -8,7 +8,7 @@
           @click="goToDetail"
           class="thumb-button"
       >
-        <img :src="track.cover" :alt="track.title" class="thumb" />
+        <img :src="track.artwork" :alt="track.title" class="thumb" />
       </button>
       <div class="info">
         <button
