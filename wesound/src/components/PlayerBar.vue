@@ -49,10 +49,9 @@
     <div class="right-side">
       <button
           class="queue"
-          :class="{ active: activeTab === 'queue' }"
-          @click="setActiveTab('queue')"
+          @click="openQueueTab"
       >
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
           <rect x="3" y="5" width="12" height="2" rx="1"/>
           <rect x="3" y="10" width="12" height="2" rx="1"/>
           <rect x="3" y="15" width="8"  height="2" rx="1"/>
@@ -89,6 +88,14 @@ const formatTime = (sec) => {
 function goToDetail() {
   if (!track.value) return;
   router.push(`/song/${track.value.id}/`);
+}
+
+function openQueueTab() {
+  if (!track.value) return;
+  router.push({
+    path: `/song/${track.value.id}/`,
+    query: { tab: "queue" }
+  });
 }
 </script>
 

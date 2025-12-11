@@ -10,8 +10,26 @@ const route = useRoute();
 
 const { song, loading, error, fetchSong } = useITunesSong();
 
+const activeTab = ref(null);
+
 onMounted(() => {
   fetchSong(route.params.id);
+});
+
+onMounted(() => {
+  const tab = route.query.tab;
+  if (tab === "queue") {
+    activeTab.value = "queue";
+  }
+  if (tab === "comments") {
+    activeTab.value = "comments";
+  }
+  if (tab === "remixes") {
+    activeTab.value = "comments";
+  }
+  if (tab === "covers") {
+    activeTab.value = "covers";
+  }
 });
 
 watch(
@@ -45,8 +63,6 @@ watch(song, (s) => {
 
   // If same song → DO NOTHING
 });
-
-const activeTab = ref(null);
 
 function setActiveTab(tabName) {
   activeTab.value = tabName;
@@ -88,29 +104,29 @@ function setActiveTab(tabName) {
               <polygon points="19,8 19,16 23,12" />
             </svg>
           </button>
-          <router-link
-              :to="`/song/${route.params.id}/comments`"
+          <button
               class="nav-item"
-              active-class="active"
+              :class="{ active: activeTab === 'comments' }"
+              @click="setActiveTab('comments')"
           >
             Comments
-          </router-link>
+          </button>
 
-          <router-link
-              :to="`/song/${route.params.id}/covers`"
+          <button
               class="nav-item"
-              active-class="active"
-          >
-            Covers
-          </router-link>
-
-          <router-link
-              :to="`/song/${route.params.id}/remixes`"
-              class="nav-item"
-              active-class="active"
+              :class="{ active: activeTab === 'remixes' }"
+              @click="setActiveTab('remixes')"
           >
             Remixes
-          </router-link>
+          </button>
+
+          <button
+              class="nav-item"
+              :class="{ active: activeTab === 'covers' }"
+              @click="setActiveTab('covers')"
+          >
+            Covers
+          </button>
         </div>
 
         <div class="rs-content">
