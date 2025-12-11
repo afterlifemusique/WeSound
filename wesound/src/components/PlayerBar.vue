@@ -182,8 +182,8 @@ function openQueueTab() {
 }
 
 /* Animate ONLY when the text is too long AND hovered */
-.title-container:hover .scroll-text {
-  animation: marquee 7s linear infinite;
+.title-container .scroll-text {
+  animation: marquee 8s linear infinite;
 }
 
 @keyframes marquee {
