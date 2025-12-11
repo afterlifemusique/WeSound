@@ -20,10 +20,40 @@ export const usePlayer = defineStore("player", {
     }),
 
     actions: {
+        normalizeTrack(raw) {
+            return {
+                id: raw.id,
+                title: raw.title,
+                artist: raw.artist,
+                url: raw.url,
+
+                // unify all artwork fields
+                artwork:
+                    raw.artwork ||
+                    raw.cover ||
+                    raw.image ||
+                    raw.artworkUrl100 ||
+                    null,
+
+                // optional: keep a unified cover alias
+                cover:
+                    raw.artwork ||
+                    raw.cover ||
+                    raw.image ||
+                    raw.artworkUrl100 ||
+                    null,
+
+                album: raw.album || '',
+                duration: raw.duration || 0,
+            };
+        },
+
         setPlaylist(songs) {
-            this.playlist = songs;
+            const normalized = songs.map(s => this.normalizeTrack(s));
+
+            this.playlist = normalized;
             this.currentIndex = 0;
-            this.track = this.playlist[0] || null;
+            this.track = normalized[0] || null;
 
             if (!this.audio) {
                 this.audio = new Audio();
