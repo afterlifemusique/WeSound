@@ -11,12 +11,14 @@
         <img :src="track.artwork" :alt="track.title" class="thumb" />
       </button>
       <div class="info">
-        <button
-            @click="goToDetail"
-            class="title-button"
-        >
-          <h3>{{ track.title }}</h3>
-        </button>
+        <div class="title-container">
+          <button
+              @click="goToDetail"
+              class="title-button"
+          >
+            <h3 class="scroll-text">{{ track.title }}</h3>
+          </button>
+        </div>
         <p>{{ track.artist }}</p>
       </div>
     </div>
@@ -120,8 +122,8 @@ function openQueueTab() {
 .left-side {
   display: flex;
   align-items: center;
-  padding: 0 16px;
-  gap: 16px;
+  padding-left: 8px;
+  gap: 8px;
   left: 0;
   width: 25%;
 }
@@ -155,15 +157,42 @@ function openQueueTab() {
   font-size: 15px;
   font-weight: 600;
   margin: 0;
-  justify-content: left;
 }
 
 .title-button{
+  display: inline-flex;     /* instead of flex or block */
+  justify-content: flex-start;
   background: transparent;
   cursor: pointer;
   border: none;
   padding: 0;
-  display: flex;
+}
+
+.scroll-text {
+  white-space: nowrap;
+  display: inline-block;
+  position: relative;
+  animation: none;           /* default: not moving */
+}
+
+.title-container {
+  width: 140px;              /* limit how much space title can use */
+  overflow: hidden;          /* hide overflow */
+  position: relative;
+}
+
+/* Animate ONLY when the text is too long AND hovered */
+.title-container:hover .scroll-text {
+  animation: marquee 7s linear infinite;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%); /* adjust based on length */
+  }
 }
 
 .info p {
