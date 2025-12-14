@@ -51,12 +51,15 @@
         </button>
 
         <p v-if="error" class="error-message">{{ error }}</p>
+        <p v-if="success" class="success-message">{{ success }}</p>
       </form>
     </div>
 
     <div class="login-section">
       <span class="login-text">Already have an account?</span>
-      <button @click="$router.push('/login')" class="login-btn-bottom">Log In</button>
+      <button @click="$router.push('/login')" class="login-btn-bottom">
+        Log In
+      </button>
     </div>
   </div>
 </template>
@@ -64,8 +67,7 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-// Import your signup function
-// import { signUp } from "../api/auth.js";
+import { signUp } from "../api/auth.js";
 
 const router = useRouter();
 
@@ -74,11 +76,13 @@ const email = ref("");
 const password = ref("");
 const confirmPassword = ref("");
 const error = ref(null);
+const success = ref(null);
 const loading = ref(false);
 
 async function signup() {
   loading.value = true;
   error.value = null;
+  success.value = null;
 
   // Validation
   if (password.value !== confirmPassword.value) {
@@ -93,14 +97,22 @@ async function signup() {
     return;
   }
 
-  // Your signup logic here
-  // const { data, error: signUpError } = await signUp(email.value, password.value, username.value);
+  // Sign up
+  const { data, error: signUpError } = await signUp(
+      email.value,
+      password.value,
+      username.value
+  );
 
-  // if (signUpError) {
-  //   error.value = signUpError.message;
-  // } else {
-  //   router.push('/');
-  // }
+  if (signUpError) {
+    error.value = signUpError.message;
+  } else {
+    success.value = "Account created! Check your email to confirm.";
+    // Optionally redirect after a delay
+    setTimeout(() => {
+      router.push('/login');
+    }, 2000);
+  }
 
   loading.value = false;
 }

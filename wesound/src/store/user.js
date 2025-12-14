@@ -1,6 +1,5 @@
 import { defineStore } from "pinia";
-import { currentUser } from "../composables/useUser.js";
-import { watch } from "vue";
+import { supabase } from "../lib/supabase.js";
 
 export const useUserStore = defineStore("user", {
     state: () => ({
@@ -19,15 +18,12 @@ export const useUserStore = defineStore("user", {
 export function setupUserStoreSync() {
     const userStore = useUserStore();
 
-    watch(
-        currentUser,
-        (newUser) => {
-            if (newUser) {
-                userStore.setUser(newUser);
-            } else {
-                userStore.clearUser();
-            }
-        },
-        { immediate: true }
-    );
+    supabase.auth.onAuthStateChange((_event, session) => {
+        const user = session?.user ?? null;
+        if (user) {
+            userStore.setUser(user);
+        } else {
+            userStore.clearUser();
+        }
+    });
 }

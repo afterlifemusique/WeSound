@@ -43,18 +43,17 @@
 
 <script setup>
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 import { signIn } from "../api/auth.js";
 import { useUserStore } from "../store/user.js";
-import {useRouter} from "vue-router";
+
+const router = useRouter();
+const userStore = useUserStore();
 
 const email = ref("");
 const password = ref("");
 const error = ref(null);
 const loading = ref(false);
-
-const router = useRouter();
-
-const userStore = useUserStore();
 
 async function login() {
   loading.value = true;
@@ -65,7 +64,8 @@ async function login() {
   if (signInError) {
     error.value = signInError.message;
   } else {
-    // userStore.user will update automatically due to watcher in store
+    // User is now logged in, redirect to home
+    router.push('/');
   }
 
   loading.value = false;
