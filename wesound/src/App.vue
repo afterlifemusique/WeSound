@@ -3,6 +3,7 @@ import { watch } from "vue";
 import { RouterView, useRoute } from "vue-router";
 import PlayerBar from "./components/PlayerBar.vue";
 import SearchBar from "./components/SearchBar.vue";
+import ProfilePicture from "./components/ProfilePicture.vue";
 
 import { useITunes } from "./composables/useITunes";
 import { usePlayer } from "./store/player";
@@ -32,11 +33,14 @@ watch(songs, (newSongs) => {
 
     <!-- Navigation Sidebar -->
     <nav class="sidebar">
-      <router-link to="/" class="logo">WeSound</router-link>
+      <div class="sidebar-header">
+        <ProfilePicture />
+        <router-link to="/" class="logo">WS</router-link>
+      </div>
       <router-link to="/" class="nav-item">Home</router-link>
       <router-link to="/feed" class="nav-item">Feed</router-link>
       <router-link to="/messages" class="nav-item">Messages</router-link>
-      <router-link to="/profile/1" class="nav-item">Profile</router-link>
+      <router-link to="/profile" class="nav-item">Profile</router-link>
     </nav>
 
     <!-- Main content -->
@@ -93,6 +97,13 @@ html, body {
   color: white;
 }
 
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px; /* Add some space below the header */
+}
+
 /* Sidebar items */
 .nav-item {
   display: flex;
@@ -121,18 +132,12 @@ html, body {
 
 /* Logo */
 .logo {
-  background-color: #111111;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  border-radius: 6px;
+  font-size: 32px; /* Bigger font for the logo */
   color: #ffffff;
   text-decoration: solid;
-  font-size: 24px;
-  transition: all 0.2s ease;
-  justify-content: center;
+  font-weight: bold;
 }
+
 
 /* Page content pushed right */
 .main-content {
