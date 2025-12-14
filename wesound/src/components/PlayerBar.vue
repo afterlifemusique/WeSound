@@ -188,7 +188,8 @@ function openQueueTab() {
   display: block;
   overflow: hidden;
   width: 100%;
-  max-width: 150px
+  max-width: 150px;
+  --scroll-distance: -100%;
 }
 
 .scroll-text {
