@@ -136,7 +136,7 @@ async function onToggle() {
 /* hovered pop */
 .heart-btn:not(.busy):hover {
   transform: scale(1.05);
-  color: #e6e6e6;
+  color: #fff;
 }
 
 /* liked state: pink-ish like Spotify (you can change) */

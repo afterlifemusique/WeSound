@@ -8,10 +8,19 @@
           @click="goToDetail"
           class="thumb-button"
       >
-        <img :src="track.cover" :alt="track.title" class="thumb" />
+        <img :src="track.artwork" :alt="track.title" class="thumb" />
       </button>
       <div class="info">
-        <h3>{{ track.title }}</h3>
+        <div class="title-container">
+          <button
+              @click="goToDetail"
+              class="title-button"
+          >
+            <div class="scroll-wrapper" v-marquee>
+              <h3 class="scroll-text">{{ track.title }}</h3>
+            </div>
+          </button>
+        </div>
         <p>{{ track.artist }}</p>
       </div>
     </div>
@@ -44,10 +53,9 @@
     <div class="right-side">
       <button
           class="queue"
-          :class="{ active: activeTab === 'queue' }"
-          @click="setActiveTab('queue')"
+          @click="openQueueTab"
       >
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
           <rect x="3" y="5" width="12" height="2" rx="1"/>
           <rect x="3" y="10" width="12" height="2" rx="1"/>
           <rect x="3" y="15" width="8"  height="2" rx="1"/>
@@ -59,12 +67,14 @@
   </div>
 </template>
 
-
 <script setup>
 import { storeToRefs } from "pinia";
 import { usePlayer } from "../store/player";
 import { useRouter } from "vue-router";
 import HeartLike from "@/components/HeartLike.vue";
+import marqueeDirective from "@/directives/marquee.js";
+
+const vMarquee = marqueeDirective;
 
 const router = useRouter();
 
@@ -85,6 +95,14 @@ function goToDetail() {
   if (!track.value) return;
   router.push(`/song/${track.value.id}/`);
 }
+
+function openQueueTab() {
+  if (!track.value) return;
+  router.push({
+    path: `/song/${track.value.id}/`,
+    query: { tab: "queue" }
+  });
+}
 </script>
 
 <style scoped>
@@ -104,14 +122,14 @@ function goToDetail() {
   justify-content: space-around;
 }
 
-/* LEFT */
+/* LEFT SIDE */
 .left-side {
   display: flex;
   align-items: center;
-  padding: 0 16px;
-  gap: 16px;
-  left: 0;
+  padding-left: 8px;
+  gap: 8px;
   width: 25%;
+  min-width: 0; /* Allow shrinking */
 }
 
 .thumb {
@@ -119,6 +137,7 @@ function goToDetail() {
   height: 48px;
   object-fit: cover;
   border-radius: 4px;
+  flex-shrink: 0; /* Prevent thumbnail from shrinking */
 }
 
 .thumb-button {
@@ -128,8 +147,8 @@ function goToDetail() {
   cursor: pointer;
   transition: 0.2s ease;
   border: none;
-  right: 0;
   padding: 0;
+  flex-shrink: 0;
 }
 
 .info {
@@ -137,21 +156,77 @@ function goToDetail() {
   display: flex;
   flex-direction: column;
   line-height: 1.2;
+  min-width: 0; /* Critical for text overflow */
+  overflow: hidden;
 }
 
 .info h3 {
   font-size: 15px;
   font-weight: 600;
   margin: 0;
-  justify-content: left;
+}
+
+.title-button {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  background: transparent;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  text-align: left;
+}
+
+.title-container {
+  width: 100%;
+  max-width: 180px; /* Adjust based on your layout */
+  overflow: hidden;
+  position: relative;
+}
+
+.scroll-wrapper {
+  display: block;
+  overflow: hidden;
+  width: 100%;
+  max-width: 150px;
+  --scroll-distance: -100%;
+}
+
+.scroll-text {
+  white-space: nowrap;
+  display: inline-block;
+  padding-right: 20px; /* Space between loop iterations */
+}
+
+/* Marquee animation - only when enabled */
+.marquee-enabled .scroll-text {
+  animation: marquee 10s linear infinite;
+  will-change: transform;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  10% {
+    transform: translateX(0); /* Pause at start */
+  }
+  90% {
+    transform: translateX(var(--scroll-distance, -100%));
+  }
+  100% {
+    transform: translateX(var(--scroll-distance, -100%)); /* Pause at end */
+  }
 }
 
 .info p {
   font-size: 13px;
   color: #666;
   margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-
 /* MID */
 .middle{
   width: 50%;
@@ -170,13 +245,9 @@ function goToDetail() {
   border: none;
   background: transparent;
   cursor: pointer;
-  color: #333;
-  transition: color 0.15s;
-}
-
-.control-btn:hover {
   color: #000;
-  cursor: pointer;
+  transition: color 0.15s;
+  width: 40px;
 }
 
 .progress-wrapper {
@@ -216,11 +287,9 @@ function goToDetail() {
 
 .queue {
   padding: 12px 20px;
-  background: #eaeaea;
   border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  cursor: pointer;
   text-decoration: none;
+  background: transparent;
   color: black;
   font-weight: 600;
   transition: 0.2s ease;
@@ -229,5 +298,10 @@ function goToDetail() {
   gap: 6px;
   border: none;
   right: 0;
+  cursor: pointer;
+}
+
+.queue:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 </style>

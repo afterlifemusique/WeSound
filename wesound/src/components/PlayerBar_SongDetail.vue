@@ -23,6 +23,7 @@
           :max="player.duration"
           :value="player.currentTime"
           @input="player.seekTo(Number($event.target.value))"
+          :style="progressStyle"
       />
       <span class="time">{{ formatTime(player.duration) }}</span>
     </div>
@@ -35,6 +36,7 @@ import { storeToRefs } from "pinia";
 import { usePlayer } from "../store/player";
 import router from "../router/index.js";
 import HeartLike from "@/components/HeartLike.vue";
+import {computed} from "vue";
 
 const player = usePlayer();
 const { playing, track } = storeToRefs(player);
@@ -69,6 +71,20 @@ const formatTime = (sec) => {
   return `${m}:${s}`;
 };
 
+const progressStyle = computed(() => {
+  const pct = player.duration
+      ? (player.currentTime / player.duration) * 100
+      : 0;
+
+  return {
+    background: `linear-gradient(
+      to right,
+      #fff ${pct}%,   /* filled part */
+      #777 ${pct}%       /* remaining part */
+    )`
+  };
+});
+
 function onLikeError(e) { console.error(e); }
 // optional: react to like change
 function onLiked(val) { /* update local state if needed */ }
@@ -81,6 +97,7 @@ function onLiked(val) { /* update local state if needed */ }
   background: transparent;
   color: #111;
   display: flex;
+  flex-direction: column;
   align-items: center;
   padding: 0 16px;
   gap: 16px;
@@ -103,6 +120,7 @@ function onLiked(val) { /* update local state if needed */ }
   display: flex;
   align-items: center;
   gap: 12px;
+  margin-top: 8px;
 }
 
 .control-btn {
@@ -111,12 +129,13 @@ function onLiked(val) { /* update local state if needed */ }
   border: none;
   background: transparent;
   cursor: pointer;
-  color: #ffffff;
+  color: #aaa;
   transition: color 0.15s;
+  width: 40px;
 }
 
 .control-btn:hover {
-  color: #000;
+  color: #fff;
 }
 
 .progress-wrapper {
@@ -127,12 +146,12 @@ function onLiked(val) { /* update local state if needed */ }
 }
 
 .progress-bar {
-  flex: 1;
+  width: 600px;
   height: 4px;
   appearance: none;
-  background: #ccc;
   border-radius: 2px;
   cursor: pointer;
+  background: transparent;
 }
 
 .progress-bar::-webkit-slider-thumb {
@@ -144,8 +163,7 @@ function onLiked(val) { /* update local state if needed */ }
 }
 
 .time {
-  font-size: 12px;
-  opacity: 0.7;
-  color: #aaa;
+  font-size: 14px;
+  color: #fff;
 }
 </style>
