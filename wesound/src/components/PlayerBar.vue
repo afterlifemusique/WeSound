@@ -16,7 +16,9 @@
               @click="goToDetail"
               class="title-button"
           >
-            <h3 class="scroll-text">{{ track.title }}</h3>
+            <div class="scroll-wrapper" v-marquee>
+              <h3 class="scroll-text">{{ track.title }}</h3>
+            </div>
           </button>
         </div>
         <p>{{ track.artist }}</p>
@@ -65,12 +67,14 @@
   </div>
 </template>
 
-
 <script setup>
 import { storeToRefs } from "pinia";
 import { usePlayer } from "../store/player";
 import { useRouter } from "vue-router";
 import HeartLike from "@/components/HeartLike.vue";
+import marqueeDirective from "@/directives/marquee.js";
+
+const vMarquee = marqueeDirective;
 
 const router = useRouter();
 
@@ -118,14 +122,14 @@ function openQueueTab() {
   justify-content: space-around;
 }
 
-/* LEFT */
+/* LEFT SIDE */
 .left-side {
   display: flex;
   align-items: center;
   padding-left: 8px;
   gap: 8px;
-  left: 0;
   width: 25%;
+  min-width: 0; /* Allow shrinking */
 }
 
 .thumb {
@@ -133,6 +137,7 @@ function openQueueTab() {
   height: 48px;
   object-fit: cover;
   border-radius: 4px;
+  flex-shrink: 0; /* Prevent thumbnail from shrinking */
 }
 
 .thumb-button {
@@ -142,8 +147,8 @@ function openQueueTab() {
   cursor: pointer;
   transition: 0.2s ease;
   border: none;
-  right: 0;
   padding: 0;
+  flex-shrink: 0;
 }
 
 .info {
@@ -151,6 +156,8 @@ function openQueueTab() {
   display: flex;
   flex-direction: column;
   line-height: 1.2;
+  min-width: 0; /* Critical for text overflow */
+  overflow: hidden;
 }
 
 .info h3 {
@@ -159,39 +166,55 @@ function openQueueTab() {
   margin: 0;
 }
 
-.title-button{
-  display: inline-flex;     /* instead of flex or block */
-  justify-content: flex-start;
+.title-button {
+  display: block;
+  width: 100%;
+  min-width: 0;
   background: transparent;
   cursor: pointer;
   border: none;
   padding: 0;
+  text-align: left;
+}
+
+.title-container {
+  width: 100%;
+  max-width: 180px; /* Adjust based on your layout */
+  overflow: hidden;
+  position: relative;
+}
+
+.scroll-wrapper {
+  display: block;
+  overflow: hidden;
+  width: 100%;
+  max-width: 150px
 }
 
 .scroll-text {
   white-space: nowrap;
   display: inline-block;
-  position: relative;
-  animation: none;           /* default: not moving */
+  padding-right: 20px; /* Space between loop iterations */
 }
 
-.title-container {
-  width: 140px;              /* limit how much space title can use */
-  overflow: hidden;          /* hide overflow */
-  position: relative;
-}
-
-/* Animate ONLY when the text is too long AND hovered */
-.title-container .scroll-text {
-  animation: marquee 8s linear infinite;
+/* Marquee animation - only when enabled */
+.marquee-enabled .scroll-text {
+  animation: marquee 10s linear infinite;
+  will-change: transform;
 }
 
 @keyframes marquee {
   0% {
     transform: translateX(0);
   }
+  10% {
+    transform: translateX(0); /* Pause at start */
+  }
+  90% {
+    transform: translateX(var(--scroll-distance, -100%));
+  }
   100% {
-    transform: translateX(-50%); /* adjust based on length */
+    transform: translateX(var(--scroll-distance, -100%)); /* Pause at end */
   }
 }
 
@@ -199,8 +222,10 @@ function openQueueTab() {
   font-size: 13px;
   color: #666;
   margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-
 /* MID */
 .middle{
   width: 50%;
