@@ -40,8 +40,7 @@ watch(songs, (newSongs) => {
       <router-link to="/" class="nav-item">Home</router-link>
       <router-link to="/feed" class="nav-item">Feed</router-link>
       <router-link to="/messages" class="nav-item">Messages</router-link>
-      <router-link to="/profile" class="nav-item">Profile</router-link>
-    </nav>
+          </nav>
 
     <!-- Main content -->
     <main class="main-content">

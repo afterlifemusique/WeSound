@@ -118,15 +118,6 @@ function formatDate(date) {
 
 <template>
   <div class="profile-page">
-    <!-- Search Bar -->
-    <div class="search-container">
-      <input
-          type="text"
-          placeholder="Search..."
-          class="search-input"
-      />
-    </div>
-
     <div v-if="loading" class="loading">
       <p>Loading profile...</p>
     </div>
@@ -277,32 +268,6 @@ function formatDate(date) {
   padding: 20px;
   max-width: 1400px;
   margin: 0 auto;
-}
-
-/* Search Bar */
-.search-container {
-  max-width: 400px;
-  margin-bottom: 30px;
-}
-
-.search-input {
-  width: 100%;
-  padding: 12px 20px;
-  background: #3a3a3a;
-  border: 1px solid #4a4a4a;
-  border-radius: 25px;
-  color: #fff;
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.2s;
-}
-
-.search-input::placeholder {
-  color: #888;
-}
-
-.search-input:focus {
-  border-color: #666;
 }
 
 /* Profile Header */
