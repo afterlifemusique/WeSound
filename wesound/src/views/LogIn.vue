@@ -36,7 +36,7 @@
 
     <div class="signup-section">
       <span class="signup-text">New to WeSound?</span>
-      <button class="signup-btn">Sign In</button>
+      <button @click="router.push('/signup')" class="signup-btn">Create Account</button>
     </div>
   </div>
 </template>
@@ -45,11 +45,14 @@
 import { ref } from "vue";
 import { signIn } from "../api/auth.js";
 import { useUserStore } from "../store/user.js";
+import {useRouter} from "vue-router";
 
 const email = ref("");
 const password = ref("");
 const error = ref(null);
 const loading = ref(false);
+
+const router = useRouter();
 
 const userStore = useUserStore();
 
