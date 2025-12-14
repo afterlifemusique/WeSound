@@ -1,4 +1,4 @@
-import { supabase } from "../composables/useSupabase.js";
+import { supabase } from "../lib/supabase.js";
 
 export async function createThread(userId, content) {
   return supabase.from("threads").insert({ user_id: userId, content });

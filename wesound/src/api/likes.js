@@ -1,5 +1,5 @@
 // src/api/likes.js
-import { supabase } from "../composables/useSupabase.js";
+import { supabase } from "../lib/supabase.js";
 
 /**
  * Check if a user has liked a given song (returns boolean)

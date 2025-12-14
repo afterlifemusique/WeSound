@@ -1,4 +1,4 @@
-import { supabase } from "../composables/useSupabase.js";
+import { supabase } from "../lib/supabase.js";
 
 export async function sendMessage(senderId, receiverId, content) {
   return supabase.from("messages").insert({

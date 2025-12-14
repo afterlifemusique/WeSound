@@ -1,14 +1,25 @@
 <template>
-  <div class="login-page">
-    <div class="login-container">
-      <form @submit.prevent="login" class="login-form">
+  <div class="signup-page">
+    <div class="signup-container">
+      <form @submit.prevent="signup" class="signup-form">
         <div class="form-group">
-          <label for="email">Username or Email</label>
+          <label for="username">Username</label>
+          <input
+              id="username"
+              v-model="username"
+              type="text"
+              placeholder="Choose a username"
+              required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
           <input
               id="email"
               v-model="email"
-              type="text"
-              placeholder="Value"
+              type="email"
+              placeholder="Your email"
               required
           />
         </div>
@@ -19,24 +30,36 @@
               id="password"
               v-model="password"
               type="password"
-              placeholder="Value"
+              placeholder="Create a password"
               required
           />
         </div>
 
-        <button type="submit" :disabled="loading" class="login-btn">
-          {{ loading ? 'Logging in...' : 'Log In' }}
+        <div class="form-group">
+          <label for="confirmPassword">Confirm Password</label>
+          <input
+              id="confirmPassword"
+              v-model="confirmPassword"
+              type="password"
+              placeholder="Confirm password"
+              required
+          />
+        </div>
+
+        <button type="submit" :disabled="loading" class="signup-btn">
+          {{ loading ? 'Creating account...' : 'Sign Up' }}
         </button>
 
-        <a href="#" class="forgot-password">Forgot password?</a>
-
         <p v-if="error" class="error-message">{{ error }}</p>
+        <p v-if="success" class="success-message">{{ success }}</p>
       </form>
     </div>
 
-    <div class="signup-section">
-      <span class="signup-text">New to WeSound?</span>
-      <button @click="router.push('/signup')" class="signup-btn">Create Account</button>
+    <div class="login-section">
+      <span class="login-text">Already have an account?</span>
+      <button @click="$router.push('/login')" class="login-btn-bottom">
+        Log In
+      </button>
     </div>
   </div>
 </template>
@@ -44,28 +67,51 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { signIn } from "../api/auth.js";
-import { useUserStore } from "../store/user.js";
+import { signUp } from "../api/auth.js";
 
 const router = useRouter();
-const userStore = useUserStore();
 
+const username = ref("");
 const email = ref("");
 const password = ref("");
+const confirmPassword = ref("");
 const error = ref(null);
+const success = ref(null);
 const loading = ref(false);
 
-async function login() {
+async function signup() {
   loading.value = true;
   error.value = null;
+  success.value = null;
 
-  const { data, error: signInError } = await signIn(email.value, password.value);
+  // Validation
+  if (password.value !== confirmPassword.value) {
+    error.value = "Passwords do not match";
+    loading.value = false;
+    return;
+  }
 
-  if (signInError) {
-    error.value = signInError.message;
+  if (password.value.length < 6) {
+    error.value = "Password must be at least 6 characters";
+    loading.value = false;
+    return;
+  }
+
+  // Sign up
+  const { data, error: signUpError } = await signUp(
+      email.value,
+      password.value,
+      username.value
+  );
+
+  if (signUpError) {
+    error.value = signUpError.message;
   } else {
-    // User is now logged in, redirect to home
-    router.push('/');
+    success.value = "Account created! Check your email to confirm.";
+    // Optionally redirect after a delay
+    setTimeout(() => {
+      router.push('/login');
+    }, 2000);
   }
 
   loading.value = false;
@@ -73,7 +119,7 @@ async function login() {
 </script>
 
 <style scoped>
-.login-page {
+.signup-page {
   min-height: 100vh;
   background: #000;
   display: flex;
@@ -83,7 +129,7 @@ async function login() {
   padding: 20px;
 }
 
-.login-container {
+.signup-container {
   background: #fff;
   border-radius: 12px;
   padding: 40px;
@@ -92,7 +138,7 @@ async function login() {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-.login-form {
+.signup-form {
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -128,7 +174,7 @@ async function login() {
   border-color: #666;
 }
 
-.login-btn {
+.signup-btn {
   width: 100%;
   padding: 14px;
   background: #333;
@@ -142,25 +188,13 @@ async function login() {
   margin-top: 4px;
 }
 
-.login-btn:hover:not(:disabled) {
+.signup-btn:hover:not(:disabled) {
   background: #1a1a1a;
 }
 
-.login-btn:disabled {
+.signup-btn:disabled {
   background: #666;
   cursor: not-allowed;
-}
-
-.forgot-password {
-  font-size: 14px;
-  color: #333;
-  text-decoration: underline;
-  align-self: flex-start;
-  margin-top: -8px;
-}
-
-.forgot-password:hover {
-  color: #000;
 }
 
 .error-message {
@@ -172,19 +206,19 @@ async function login() {
   border-radius: 6px;
 }
 
-.signup-section {
+.login-section {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-top: 32px;
 }
 
-.signup-text {
+.login-text {
   color: #fff;
   font-size: 15px;
 }
 
-.signup-btn {
+.login-btn-bottom {
   padding: 10px 24px;
   background: #b8860b;
   color: #fff;
@@ -196,7 +230,7 @@ async function login() {
   transition: background 0.2s;
 }
 
-.signup-btn:hover {
+.login-btn-bottom:hover {
   background: #9a7009;
 }
 </style>
