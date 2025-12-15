@@ -122,134 +122,137 @@ function formatDate(date) {
       <p>Loading profile...</p>
     </div>
 
-    <div v-else-if="profile">
-      <!-- Profile Header -->
-      <div class="profile-header">
-        <!-- Profile Picture -->
-        <div class="profile-picture">
-          <img
-              v-if="profile.avatar_url"
-              :src="profile.avatar_url"
-              :alt="profile.display_name"
-              class="avatar-image"
-          />
-          <div v-else class="avatar-placeholder"></div>
-        </div>
-
-        <!-- Profile Info -->
-        <div class="profile-info">
-          <div class="name-section">
-            <h1 class="profile-name">
-              {{ profile.display_name || profile.username }}
-              <span v-if="profile.is_verified" class="verified-badge">✓</span>
-            </h1>
-            <p class="username">@{{ profile.username }}</p>
+    <div v-else-if="profile" class="profile">
+      <div class="left-side">
+        <!-- Profile Header -->
+        <div class="profile-header">
+          <!-- Profile Picture -->
+          <div class="profile-picture">
+            <img
+                v-if="profile.avatar_url"
+                :src="profile.avatar_url"
+                :alt="profile.display_name"
+                class="avatar-image"
+            />
+            <div v-else class="avatar-placeholder"></div>
           </div>
 
-          <p v-if="profile.bio" class="bio">{{ profile.bio }}</p>
+          <!-- Profile Info -->
+          <div class="profile-info">
+            <div class="name-section">
+              <h1 class="profile-name">
+                {{ profile.display_name || profile.username }}
+                <span v-if="profile.is_verified" class="verified-badge">✓</span>
+              </h1>
+              <p class="username">@{{ profile.username }}</p>
+            </div>
 
-          <!-- Stats -->
-          <div class="stats">
-            <div class="stat">
-              <span class="stat-value">{{ stats.followers }}</span>
-              <span class="stat-label">Followers</span>
-            </div>
-            <div class="stat">
-              <span class="stat-value">{{ stats.following }}</span>
-              <span class="stat-label">Following</span>
-            </div>
-            <div class="stat">
-              <span class="stat-value">{{ stats.totalLikes }}</span>
-              <span class="stat-label">Likes</span>
-            </div>
-          </div>
+            <p v-if="profile.bio" class="bio">{{ profile.bio }}</p>
 
-          <!-- Action Buttons -->
-          <div class="actions">
-            <button v-if="!isOwnProfile" @click="followUser" class="follow-btn">
-              Follow
-            </button>
-            <button v-if="isOwnProfile" class="edit-btn">
-              Edit Profile
-            </button>
-            <button class="share-btn">Share</button>
+            <!-- Stats -->
+            <div class="stats">
+              <div class="stat">
+                <span class="stat-value">{{ stats.followers }}</span>
+                <span class="stat-label">Followers</span>
+              </div>
+              <div class="stat">
+                <span class="stat-value">{{ stats.following }}</span>
+                <span class="stat-label">Following</span>
+              </div>
+              <div class="stat">
+                <span class="stat-value">{{ stats.totalLikes }}</span>
+                <span class="stat-label">Likes</span>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="actions">
+              <button v-if="!isOwnProfile" @click="followUser" class="follow-btn">
+                Follow
+              </button>
+              <button v-if="isOwnProfile" class="edit-btn">
+                Edit Profile
+              </button>
+              <button class="share-btn">Share</button>
+            </div>
           </div>
         </div>
       </div>
-
-      <!-- Navigation Tabs -->
-      <div class="tabs-container">
-        <button
-            v-for="tab in tabs"
-            :key="tab"
-            @click="activeTab = tab"
-            :class="['tab-button', { active: activeTab === tab }]"
-        >
-          {{ tab }}
-        </button>
-      </div>
-
-      <!-- Content Area -->
-      <div class="content-area">
-        <!-- Music Tab -->
-        <div v-if="activeTab === 'Music'" class="tab-content">
-          <div v-if="songs.length" class="songs-grid">
-            <div v-for="song in songs" :key="song.id" class="song-card">
-              <div class="song-artwork">
-                <img
-                    v-if="song.artwork_url"
-                    :src="song.artwork_url"
-                    :alt="song.title"
-                />
-                <div v-else class="artwork-placeholder">🎵</div>
-              </div>
-              <div class="song-info">
-                <h3 class="song-title">{{ song.title }}</h3>
-                <p class="song-artist">{{ song.artist }}</p>
-              </div>
-            </div>
-          </div>
-          <p v-else class="placeholder-text">No songs yet</p>
+      <div class="right-side">
+        <!-- Navigation Tabs -->
+        <div class="tabs-container">
+          <button
+              v-for="tab in tabs"
+              :key="tab"
+              @click="activeTab = tab"
+              :class="['tab-button', { active: activeTab === tab }]"
+          >
+            {{ tab }}
+          </button>
         </div>
 
-        <!-- Posts Tab -->
-        <div v-if="activeTab === 'Posts'" class="tab-content">
-          <p class="placeholder-text">Posts coming soon</p>
-        </div>
-
-        <!-- Threads Tab -->
-        <div v-if="activeTab === 'Threads'" class="tab-content">
-          <div v-if="threads.length" class="threads-list">
-            <div v-for="thread in threads" :key="thread.id" class="thread-card">
-              <div class="thread-header">
-                <img
-                    v-if="thread.profiles?.avatar_url"
-                    :src="thread.profiles.avatar_url"
-                    class="thread-avatar"
-                />
-                <div class="thread-user">
-                  <span class="thread-username">{{ thread.profiles?.username }}</span>
-                  <span class="thread-date">{{ formatDate(thread.created_at) }}</span>
+        <!-- Content Area -->
+        <div class="content-area">
+          <!-- Music Tab -->
+          <div v-if="activeTab === 'Music'" class="tab-content">
+            <div v-if="songs.length" class="songs-grid">
+              <div v-for="song in songs" :key="song.id" class="song-card">
+                <div class="song-artwork">
+                  <img
+                      v-if="song.artwork_url"
+                      :src="song.artwork_url"
+                      :alt="song.title"
+                  />
+                  <div v-else class="artwork-placeholder">🎵</div>
+                </div>
+                <div class="song-info">
+                  <h3 class="song-title">{{ song.title }}</h3>
+                  <p class="song-artist">{{ song.artist }}</p>
                 </div>
               </div>
-              <p class="thread-content">{{ thread.content }}</p>
-              <div class="thread-stats">
-                <span>❤️ {{ thread.like_count }}</span>
-                <span>💬 {{ thread.reply_count }}</span>
+            </div>
+            <p v-else class="placeholder-text">No songs yet</p>
+          </div>
+
+          <!-- Posts Tab -->
+          <div v-if="activeTab === 'Posts'" class="tab-content">
+            <p class="placeholder-text">Posts coming soon</p>
+          </div>
+
+          <!-- Threads Tab -->
+          <div v-if="activeTab === 'Threads'" class="tab-content">
+            <div v-if="threads.length" class="threads-list">
+              <div v-for="thread in threads" :key="thread.id" class="thread-card">
+                <div class="thread-header">
+                  <img
+                      v-if="thread.profiles?.avatar_url"
+                      :src="thread.profiles.avatar_url"
+                      class="thread-avatar"
+                  />
+                  <div class="thread-user">
+                    <span class="thread-username">{{ thread.profiles?.username }}</span>
+                    <span class="thread-date">{{ formatDate(thread.created_at) }}</span>
+                  </div>
+                </div>
+                <p class="thread-content">{{ thread.content }}</p>
+                <div class="thread-stats">
+                  <span>❤️ {{ thread.like_count }}</span>
+                  <span>💬 {{ thread.reply_count }}</span>
+                </div>
               </div>
             </div>
+            <p v-else class="placeholder-text">No threads yet</p>
           </div>
-          <p v-else class="placeholder-text">No threads yet</p>
-        </div>
 
-        <!-- Merch Tab -->
-        <div v-if="activeTab === 'Merch'" class="tab-content">
-          <p class="placeholder-text">Merch coming soon</p>
-        </div>
+          <!-- Merch Tab -->
+          <div v-if="activeTab === 'Merch'" class="tab-content">
+            <p class="placeholder-text">Merch coming soon</p>
+          </div>
 
-        <!-- Events Tab -->
-        <div v-if="activeTab === 'Events'" class="tab-content">
-          <p class="placeholder-text">Events coming soon</p>
+          <!-- Events Tab -->
+          <div v-if="activeTab === 'Events'" class="tab-content">
+            <p class="placeholder-text">Events coming soon</p>
+          </div>
         </div>
       </div>
     </div>
@@ -263,11 +266,26 @@ function formatDate(date) {
 <style scoped>
 .profile-page {
   min-height: 100vh;
-  background: #2a2a2a;
+  background: transparent;
   color: #fff;
-  padding: 20px;
-  max-width: 1400px;
-  margin: 0 auto;
+  padding: 0;
+  max-width: 1900px;
+  margin: 0;
+  display: flex;
+  flex-direction: row;
+}
+
+.profile {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+
+/* LEFT SIDE */
+.left-side {
+  display: flex;
+  flex-direction: column;
+  width: 40%;
 }
 
 /* Profile Header */
@@ -276,11 +294,12 @@ function formatDate(date) {
   gap: 40px;
   margin-bottom: 40px;
   align-items: flex-start;
+  max-width: 750px;
 }
 
 .profile-picture {
-  width: 320px;
-  height: 320px;
+  width: 420px;
+  height: 420px;
   min-width: 320px;
   border-radius: 40px;
   background: linear-gradient(135deg, #b8860b 0%, #d4a574 100%);
@@ -428,6 +447,13 @@ function formatDate(date) {
   background: #3a3a3a;
 }
 
+/* RIGHT SIDE*/
+.right-side {
+  display: flex;
+  flex-direction: column;
+  width: 60%;
+}
+
 /* Navigation Tabs */
 .tabs-container {
   display: flex;
@@ -436,7 +462,8 @@ function formatDate(date) {
   background: #000;
   border-radius: 50px;
   padding: 8px;
-  max-width: fit-content;
+  width: 90%;
+  justify-content: space-evenly;
 }
 
 .tab-button {

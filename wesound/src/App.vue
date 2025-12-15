@@ -76,7 +76,7 @@ html, body {
 .app-header {
   position: fixed;
   top: 15px;
-  left: 50px;
+  left: 140px;
   right: 1050px;
   z-index: 50;
 }
@@ -141,7 +141,7 @@ html, body {
 /* Page content pushed right */
 .main-content {
   margin-left: 140px;
-  padding: 20px;
+  padding: 20px 0;
   padding-top: 80px; /* header height */
   padding-bottom: 80px; /* player height */
   height: calc(100vh - 60px - 60px); /* viewport minus header + player */
