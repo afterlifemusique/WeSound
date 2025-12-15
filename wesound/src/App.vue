@@ -3,6 +3,7 @@ import { watch } from "vue";
 import { RouterView, useRoute } from "vue-router";
 import PlayerBar from "./components/PlayerBar.vue";
 import SearchBar from "./components/SearchBar.vue";
+import ProfilePicture from "./components/ProfilePicture.vue";
 
 import { useITunes } from "./composables/useITunes";
 import { usePlayer } from "./store/player";
@@ -32,12 +33,14 @@ watch(songs, (newSongs) => {
 
     <!-- Navigation Sidebar -->
     <nav class="sidebar">
-      <router-link to="/" class="logo">WeSound</router-link>
+      <div class="sidebar-header">
+        <ProfilePicture />
+        <router-link to="/" class="logo">WS</router-link>
+      </div>
       <router-link to="/" class="nav-item">Home</router-link>
       <router-link to="/feed" class="nav-item">Feed</router-link>
       <router-link to="/messages" class="nav-item">Messages</router-link>
-      <router-link to="/profile/1" class="nav-item">Profile</router-link>
-    </nav>
+          </nav>
 
     <!-- Main content -->
     <main class="main-content">
@@ -73,7 +76,7 @@ html, body {
 .app-header {
   position: fixed;
   top: 15px;
-  left: 50px;
+  left: 140px;
   right: 1050px;
   z-index: 50;
 }
@@ -91,6 +94,13 @@ html, body {
   flex-direction: column;
   gap: 12px;
   color: white;
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px; /* Add some space below the header */
 }
 
 /* Sidebar items */
@@ -121,23 +131,17 @@ html, body {
 
 /* Logo */
 .logo {
-  background-color: #111111;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  border-radius: 6px;
+  font-size: 32px; /* Bigger font for the logo */
   color: #ffffff;
   text-decoration: solid;
-  font-size: 24px;
-  transition: all 0.2s ease;
-  justify-content: center;
+  font-weight: bold;
 }
+
 
 /* Page content pushed right */
 .main-content {
   margin-left: 140px;
-  padding: 20px;
+  padding: 20px 0;
   padding-top: 80px; /* header height */
   padding-bottom: 80px; /* player height */
   height: calc(100vh - 60px - 60px); /* viewport minus header + player */
