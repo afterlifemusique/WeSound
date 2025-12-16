@@ -1,14 +1,22 @@
 <script setup>
-import { watch } from "vue";
+import { watch, computed } from "vue";
 import { RouterView, useRoute } from "vue-router";
-import PlayerBar from "./components/PlayerBar.vue";
-import SearchBar from "./components/SearchBar.vue";
 
 import { useITunes } from "./composables/useITunes";
 import { usePlayer } from "./store/player";
+import { useUserStore } from '@/store/user';
+import { storeToRefs } from 'pinia';
+
+import PlayerBar from "./components/PlayerBar.vue";
+import SearchBar from "./components/SearchBar.vue";
 import Account from "@/components/Account.vue";
+import LoginRedirect from "@/components/LoginRedirect.vue";
 
 const route = useRoute();
+
+const userStore = useUserStore();
+const { user } = storeToRefs(userStore);
+const isLoggedIn = computed(() => !!user.value);
 
 const { songs, searchSongs, loading } = useITunes();
 const player = usePlayer();
@@ -34,8 +42,9 @@ watch(songs, (newSongs) => {
     <!-- Navigation Sidebar -->
     <nav class="sidebar">
       <router-link to="/" class="logo">WS</router-link>
-      <div>
-        <Account />
+      <div style="margin-bottom: 12px;">
+        <Account v-if="isLoggedIn" />
+        <LoginRedirect v-else />
       </div>
       <router-link to="/" class="nav-item">Home</router-link>
       <router-link to="/feed" class="nav-item">Feed</router-link>

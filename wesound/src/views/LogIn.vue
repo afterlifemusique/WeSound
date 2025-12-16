@@ -25,7 +25,7 @@
         </div>
 
         <button type="submit" :disabled="loading" class="login-btn">
-          {{ loading ? 'Logging in...' : 'Log In' }}
+          {{ loading ? 'Signing in...' : 'Sign In' }}
         </button>
 
         <a href="#" class="forgot-password">Forgot password?</a>
