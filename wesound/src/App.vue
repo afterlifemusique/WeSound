@@ -3,10 +3,10 @@ import { watch } from "vue";
 import { RouterView, useRoute } from "vue-router";
 import PlayerBar from "./components/PlayerBar.vue";
 import SearchBar from "./components/SearchBar.vue";
-import ProfilePicture from "./components/ProfilePicture.vue";
 
 import { useITunes } from "./composables/useITunes";
 import { usePlayer } from "./store/player";
+import Account from "@/components/Account.vue";
 
 const route = useRoute();
 
@@ -33,9 +33,9 @@ watch(songs, (newSongs) => {
 
     <!-- Navigation Sidebar -->
     <nav class="sidebar">
-      <div class="sidebar-header">
-        <ProfilePicture />
-        <router-link to="/" class="logo">WS</router-link>
+      <router-link to="/" class="logo">WS</router-link>
+      <div>
+        <Account />
       </div>
       <router-link to="/" class="nav-item">Home</router-link>
       <router-link to="/feed" class="nav-item">Feed</router-link>
@@ -78,7 +78,7 @@ html, body {
   top: 15px;
   left: 140px;
   right: 1050px;
-  z-index: 50;
+  z-index: 9999;
 }
 
 /* Sidebar layout */
@@ -94,13 +94,7 @@ html, body {
   flex-direction: column;
   gap: 12px;
   color: white;
-}
-
-.sidebar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px; /* Add some space below the header */
+  z-index: 9999;
 }
 
 /* Sidebar items */
