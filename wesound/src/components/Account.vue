@@ -84,10 +84,38 @@ function goToProfile() {
 }
 
 async function handleSignOut() {
-  // Optional: You could also remove the account from the vault here
+  const currentId = user.value?.id;
+
+  // 1. Remove the current account from the local Vault
+  if (currentId) {
+    const sessions = getStoredSessions();
+    const updatedSessions = sessions.filter(s => s.user.id !== currentId);
+
+    // If there are other accounts left, save the filtered list
+    // If not, this effectively clears the key
+    localStorage.setItem(SESSIONS_KEY, JSON.stringify(updatedSessions));
+  }
+
+  // 2. Perform the actual Supabase sign out
+  // This clears the current active session tokens from the browser
   const { error } = await supabase.auth.signOut();
+
+  if (error) {
+    console.error('Sign out error:', error);
+  }
+
+  // 3. UI Cleanup
   isDropdownOpen.value = false;
-  if (error) console.error('Sign out error:', error);
+
+  /* 4. Automatically switch to the first one available instead of showing a login screen. */
+  const remainingSessions = getStoredSessions();
+  if (remainingSessions.length > 0) {
+    // Automatically switch to the next available account
+    handleSwitchAccount(remainingSessions[0]);
+  } else {
+    // No accounts left, redirect to login
+    router.push('/login');
+  }
 }
 
 async function handleSwitchAccount(targetAccount) {
