@@ -105,6 +105,7 @@ async function handleSwitchAccount(targetAccount) {
 
   if (!error) {
     isDropdownOpen.value = false;
+    await router.push(`/profile/${targetAccount.user.id}`);
     window.location.reload(); // Rechargement propre pour rafraîchir toutes les données
   } else {
     console.error("Erreur de switch:", error);

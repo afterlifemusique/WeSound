@@ -1,95 +1,97 @@
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { useRoute } from "vue-router";
 import { supabase } from "@/lib/supabase";
+import { storeToRefs } from 'pinia';
+import { useUserStore } from '@/store/user';
 
 const route = useRoute();
-const userId = route.params.id;
+const userStore = useUserStore();
+const { user } = storeToRefs(userStore);
 
+// State
 const profile = ref(null);
 const loading = ref(true);
 const activeTab = ref("Music");
 const tabs = ["Music", "Posts", "Threads", "Merch", "Events"];
 
-// Stats
-const stats = ref({
-  followers: 0,
-  following: 0,
-  totalLikes: 0
-});
-
-// Content
+const stats = ref({ followers: 0, following: 0, totalLikes: 0 });
 const songs = ref([]);
 const posts = ref([]);
 const threads = ref([]);
+// --- DYNAMIC LOGIC ---
 
+// Computed: Check if the profile being viewed belongs to the logged-in user
 const isOwnProfile = computed(() => {
-  // TODO: Compare with current user ID
-  return false;
+  return user.value && profile.value && user.value.id === profile.value.id;
 });
 
-onMounted(async () => {
-  await fetchProfile();
-  await fetchStats();
-  await fetchContent();
-});
-
-async function fetchProfile() {
+// Function to load everything for a specific ID
+async function loadProfileData(id) {
+  if (!id) return;
   loading.value = true;
-  const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
 
-  if (data) {
-    profile.value = data;
-  }
+  // Run these in parallel for better performance
+  await Promise.all([
+    fetchProfile(id),
+    fetchStats(id),
+    fetchContent(id)
+  ]);
+
   loading.value = false;
 }
 
-async function fetchStats() {
-  // Get follower count
-  const { count: followerCount } = await supabase
-      .from('followers')
-      .select('*', { count: 'exact', head: true })
-      .eq('following_id', userId);
+// Watch the route params: whenever the ID in the URL changes, re-fetch data
+watch(
+    () => route.params.id,
+    async (newId) => {
+      if (newId) {
+        await loadProfileData(newId);
+      }
+    },
+    { immediate: true } // This runs it on initial load too, replacing onMounted
+);
 
-  // Get following count
-  const { count: followingCount } = await supabase
-      .from('followers')
-      .select('*', { count: 'exact', head: true })
-      .eq('follower_id', userId);
+// --- FETCH FUNCTIONS (Updated to accept id as argument) ---
 
-  // Get total song likes
-  const { count: likesCount } = await supabase
-      .from('song_likes')
-      .select('song_id', { count: 'exact', head: true })
-      .eq('song_id', userId);
+async function fetchProfile(id) {
+  const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+  if (data) profile.value = data;
+}
+
+async function fetchStats(id) {
+  const [followers, following, likes] = await Promise.all([
+    supabase.from('followers').select('*', { count: 'exact', head: true }).eq('following_id', id),
+    supabase.from('followers').select('*', { count: 'exact', head: true }).eq('follower_id', id),
+    supabase.from('song_likes').select('song_id', { count: 'exact', head: true }).eq('song_id', id)
+  ]);
 
   stats.value = {
-    followers: followerCount || 0,
-    following: followingCount || 0,
-    totalLikes: likesCount || 0
+    followers: followers.count || 0,
+    following: following.count || 0,
+    totalLikes: likes.count || 0
   };
 }
 
-async function fetchContent() {
-  // Fetch songs uploaded by user
+async function fetchContent(id) {
   const { data: songsData } = await supabase
       .from('songs')
       .select('*')
-      .eq('uploaded_by', userId)
+      .eq('uploaded_by', id)
       .order('created_at', { ascending: false })
       .limit(12);
 
   songs.value = songsData || [];
 
-  // Fetch user's threads
   const { data: threadsData } = await supabase
       .from('threads')
       .select('*, profiles!threads_user_id_fkey(*)')
-      .eq('user_id', userId)
+      .eq('user_id', id)
       .is('parent_id', null)
       .order('created_at', { ascending: false })
       .limit(20);
@@ -97,21 +99,10 @@ async function fetchContent() {
   threads.value = threadsData || [];
 }
 
-async function followUser() {
-  // TODO: Implement follow functionality
-  console.log('Follow user:', userId);
-}
-
-async function unfollowUser() {
-  // TODO: Implement unfollow functionality
-  console.log('Unfollow user:', userId);
-}
-
+// --- HELPERS ---
 function formatDate(date) {
   return new Date(date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
+    year: 'numeric', month: 'short', day: 'numeric'
   });
 }
 </script>
