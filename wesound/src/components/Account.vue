@@ -12,13 +12,14 @@ const router = useRouter();
 
 const SESSIONS_KEY = 'sb-multi-sessions';
 
-// 1. Retrieve stored sessions from localStorage
+// --- VAULT UTILS ---
+// Retrieve stored sessions from localStorage
 const getStoredSessions = () => {
   const data = localStorage.getItem(SESSIONS_KEY);
   return data ? JSON.parse(data) : [];
 };
 
-// 2. Update or add a session to the "Vault"
+// Update or add a session to the "Vault"
 const updateVaultWithSession = (session) => {
   if (!session) return;
   const sessions = getStoredSessions();
@@ -32,9 +33,9 @@ const updateVaultWithSession = (session) => {
   const index = sessions.findIndex(s => s.user.id === session.user.id);
 
   if (index > -1) {
-    sessions[index] = sessionData; // Update existing tokens
+    sessions[index] = sessionData;
   } else {
-    sessions.push(sessionData); // Add new account
+    sessions.push(sessionData);
   }
 
   localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions));
@@ -66,11 +67,10 @@ onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside);
 });
 
-// 3. Filter so the CURRENT account doesn't show in the "Switch" list
+// Filter so the CURRENT account doesn't show in the "Switch" list
 const accountsToSwitchTo = computed(() => {
   const allSessions = getStoredSessions();
   if (!user.value) return allSessions;
-  // Compare IDs to exclude current user
   return allSessions.filter(s => s.user.id !== user.value.id);
 });
 
@@ -86,46 +86,37 @@ function goToProfile() {
 async function handleSignOut() {
   const currentId = user.value?.id;
 
-  // 1. Remove the current account from the local Vault
+  // 1. Remove current account from the local Vault
   if (currentId) {
     const sessions = getStoredSessions();
     const updatedSessions = sessions.filter(s => s.user.id !== currentId);
-
-    // If there are other accounts left, save the filtered list
-    // If not, this effectively clears the key
     localStorage.setItem(SESSIONS_KEY, JSON.stringify(updatedSessions));
   }
 
-  // 2. Perform the actual Supabase sign out
-  // This clears the current active session tokens from the browser
-  const { error } = await supabase.auth.signOut();
-
-  if (error) {
-    console.error('Sign out error:', error);
-  }
-
-  // 3. UI Cleanup
+  // 2. Perform Supabase sign out
+  await supabase.auth.signOut();
   isDropdownOpen.value = false;
 
-  /* 4. Automatically switch to the first one available instead of showing a login screen. */
+  // 3. Auto-switch to next available or redirect
   const remainingSessions = getStoredSessions();
   if (remainingSessions.length > 0) {
-    // Automatically switch to the next available account
     handleSwitchAccount(remainingSessions[0]);
   } else {
-    // No accounts left, redirect to login
-    router.push('/login');
+    router.push('/signin');
   }
 }
 
 async function handleSwitchAccount(targetAccount) {
-  // A. Save current session before switching
+  // Set flicker-prevention flag for App.vue
+  sessionStorage.setItem('is_switching_account', 'true');
+
+  // 1. Save current session to vault
   const { data: { session: currentSession } } = await supabase.auth.getSession();
   if (currentSession) {
     updateVaultWithSession(currentSession);
   }
 
-  // B. Load the new session
+  // 2. Set the new session
   const { error } = await supabase.auth.setSession({
     access_token: targetAccount.access_token,
     refresh_token: targetAccount.refresh_token
@@ -133,10 +124,11 @@ async function handleSwitchAccount(targetAccount) {
 
   if (!error) {
     isDropdownOpen.value = false;
-    // C. Navigate to the new profile and refresh state
+    // 3. Navigate to new profile and reload
     await router.push(`/profile/${targetAccount.user.id}`);
     window.location.reload();
   } else {
+    sessionStorage.removeItem('is_switching_account');
     console.error("Switch error:", error);
   }
 }
@@ -147,17 +139,22 @@ async function handleAddNewAccount() {
     updateVaultWithSession(currentSession);
   }
 
-  await supabase.auth.signOut(); // Sign out locally to trigger SignInRedirect
+  await supabase.auth.signOut();
   isDropdownOpen.value = false;
-  router.push('/login');
+  router.push('/signin');
 }
 </script>
 
 <template>
   <div class="account-dropdown-wrapper" ref="dropdownRef">
-    <button @click="toggleDropdown" class="account-trigger">
+    <button @click="toggleDropdown" class="account-trigger" aria-haspopup="true" :aria-expanded="isDropdownOpen">
       <div class="user-info">
-        <img v-if="user?.user_metadata?.avatar_url" :src="user.user_metadata.avatar_url" class="trigger-avatar" />
+        <img
+            v-if="user?.user_metadata?.avatar_url"
+            :src="user.user_metadata.avatar_url"
+            class="trigger-avatar"
+            alt="Avatar"
+        />
         <div v-else class="trigger-avatar-placeholder"></div>
       </div>
       <svg :class="['arrow-icon', { 'rotated': isDropdownOpen }]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -169,7 +166,10 @@ async function handleAddNewAccount() {
       <div class="menu-section">
         <p class="section-label">Signed in as:</p>
         <div class="account-item active profile-link" @click.stop="goToProfile">
-          <img :src="user?.user_metadata?.avatar_url || 'https://placehold.co/40'" class="item-avatar" />
+          <img
+              :src="user?.user_metadata?.avatar_url || 'https://placehold.co/40'"
+              class="item-avatar"
+          />
           <div class="item-details">
             <span class="item-username">{{ user?.user_metadata?.username || 'User' }}</span>
             <span class="item-email">View Profile →</span>
@@ -185,7 +185,10 @@ async function handleAddNewAccount() {
             class="account-item switchable"
             @click.stop="handleSwitchAccount(acc)"
         >
-          <img :src="acc.user.user_metadata?.avatar_url || 'https://placehold.co/40'" class="item-avatar" />
+          <img
+              :src="acc.user.user_metadata?.avatar_url || 'https://placehold.co/40'"
+              class="item-avatar"
+          />
           <div class="item-details">
             <span class="item-username">{{ acc.user.user_metadata?.username || acc.user.email }}</span>
             <span class="item-email">{{ acc.user.email }}</span>
@@ -202,20 +205,112 @@ async function handleAddNewAccount() {
 </template>
 
 <style scoped>
-.account-dropdown-wrapper { position: relative; z-index: 9999; }
-.account-menu { position: absolute; top: 100%; left: 0; width: 280px; background: #1a1a1a; border-radius: 12px; border: 1px solid #303030; margin-top: 10px; }
-.account-trigger { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 8px 12px; background: #2a2a2a; border-radius: 25px; border: 1px solid #404040; cursor: pointer; }
-.trigger-avatar { width: 32px; height: 32px; border-radius: 50%; }
-.arrow-icon { width: 18px; transition: 0.2s; color: white; }
+.account-dropdown-wrapper {
+  position: relative;
+  z-index: 9999;
+  display: inline-block;
+}
+
+.account-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 12px;
+  background: #2a2a2a;
+  border-radius: 25px;
+  border: 1px solid #404040;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.account-trigger:hover {
+  background: #353535;
+}
+
+.trigger-avatar, .trigger-avatar-placeholder {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.trigger-avatar-placeholder {
+  background: #b8860b;
+}
+
+.arrow-icon {
+  width: 18px;
+  height: 18px;
+  margin-left: 8px;
+  transition: 0.2s;
+  color: white;
+}
+
 .arrow-icon.rotated { transform: rotate(180deg); }
+
+.account-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 280px;
+  background: #1a1a1a;
+  border-radius: 12px;
+  border: 1px solid #303030;
+  margin-top: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+
 .menu-section { padding: 8px 0; border-bottom: 1px solid #303030; }
-.section-label { padding: 0 16px 8px; color: #888; font-size: 12px; }
-.account-item { display: flex; align-items: center; padding: 10px 16px; cursor: pointer; }
+.menu-section:last-child { border-bottom: none; }
+
+.section-label {
+  padding: 0 16px 8px;
+  color: #888;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.account-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
 .account-item:hover { background: #2a2a2a; }
-.item-avatar { width: 36px; height: 36px; border-radius: 50%; margin-right: 12px; }
-.item-details { display: flex; flex-direction: column; }
+
+.item-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  margin-right: 12px;
+  object-fit: cover;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.active .item-avatar {
+  border: 2px solid #b8860b;
+}
+
+.item-details { display: flex; flex-direction: column; line-height: 1.3; }
 .item-username { font-weight: 600; font-size: 14px; color: white; }
 .item-email { font-size: 11px; color: #888; }
-.menu-button { width: 100%; text-align: left; padding: 10px 16px; background: none; border: none; color: white; cursor: pointer; }
+
+.menu-button {
+  width: 100%;
+  text-align: left;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.menu-button:hover { background: #2a2a2a; }
 .sign-out-button { color: #ff4444; }
+.sign-out-button:hover { background: rgba(255, 68, 68, 0.1); }
 </style>
