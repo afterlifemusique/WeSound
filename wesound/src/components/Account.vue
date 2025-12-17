@@ -147,7 +147,7 @@ async function handleAddNewAccount() {
     updateVaultWithSession(currentSession);
   }
 
-  await supabase.auth.signOut(); // Sign out locally to trigger LoginRedirect
+  await supabase.auth.signOut(); // Sign out locally to trigger SignInRedirect
   isDropdownOpen.value = false;
   router.push('/login');
 }
@@ -172,7 +172,7 @@ async function handleAddNewAccount() {
           <img :src="user?.user_metadata?.avatar_url || 'https://placehold.co/40'" class="item-avatar" />
           <div class="item-details">
             <span class="item-username">{{ user?.user_metadata?.username || 'User' }}</span>
-            <span class="item-email">Go to Profile →</span>
+            <span class="item-email">View Profile →</span>
           </div>
         </div>
       </div>

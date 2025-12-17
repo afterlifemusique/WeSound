@@ -10,7 +10,7 @@ import { storeToRefs } from 'pinia';
 import PlayerBar from "./components/PlayerBar.vue";
 import SearchBar from "./components/SearchBar.vue";
 import Account from "@/components/Account.vue";
-import LoginRedirect from "@/components/LoginRedirect.vue";
+import SignInRedirect from "@/components/SignInRedirect.vue";
 
 const route = useRoute();
 
@@ -44,7 +44,7 @@ watch(songs, (newSongs) => {
       <router-link to="/" class="logo">WS</router-link>
       <div style="margin-bottom: 12px;">
         <Account v-if="isLoggedIn" />
-        <LoginRedirect v-else />
+        <SignInRedirect v-else />
       </div>
       <router-link to="/" class="nav-item">Home</router-link>
       <router-link to="/feed" class="nav-item">Feed</router-link>
