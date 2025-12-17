@@ -180,12 +180,16 @@ async function handleAddNewAccount() {
 
       <div v-if="accountsToSwitchTo.length > 0" class="menu-section">
         <p class="section-label">Switch Accounts</p>
-        <div v-for="acc in accountsToSwitchTo" :key="acc.user.id" class="account-item">
-          <img
-              :src="acc.user.user_metadata?.avatar_url || DEFAULT_AVATAR"
-              @error="(e) => e.target.src = DEFAULT_AVATAR"
-              class="item-avatar"
-          />
+        <div
+            v-for="acc in accountsToSwitchTo"
+            :key="acc.user.id"
+            class="account-item switchable"
+            @click.stop="handleSwitchAccount(acc)"
+        > <img
+            :src="acc.user.user_metadata?.avatar_url || DEFAULT_AVATAR"
+            @error="(e) => e.target.src = DEFAULT_AVATAR"
+            class="item-avatar"
+        />
           <div class="item-details">
             <span class="item-username">{{ acc.user.user_metadata?.username || acc.user.email }}</span>
             <span class="item-email">{{ acc.user.email }}</span>
