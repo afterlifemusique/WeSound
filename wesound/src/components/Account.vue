@@ -12,13 +12,13 @@ const router = useRouter();
 
 const SESSIONS_KEY = 'sb-multi-sessions';
 
-// 1. Récupérer les sessions stockées
+// 1. Retrieve stored sessions from localStorage
 const getStoredSessions = () => {
   const data = localStorage.getItem(SESSIONS_KEY);
   return data ? JSON.parse(data) : [];
 };
 
-// 2. Mettre à jour ou ajouter une session dans le "Vault"
+// 2. Update or add a session to the "Vault"
 const updateVaultWithSession = (session) => {
   if (!session) return;
   const sessions = getStoredSessions();
@@ -32,9 +32,9 @@ const updateVaultWithSession = (session) => {
   const index = sessions.findIndex(s => s.user.id === session.user.id);
 
   if (index > -1) {
-    sessions[index] = sessionData; // Mise à jour des tokens
+    sessions[index] = sessionData; // Update existing tokens
   } else {
-    sessions.push(sessionData); // Nouvel ajout
+    sessions.push(sessionData); // Add new account
   }
 
   localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions));
@@ -66,11 +66,11 @@ onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside);
 });
 
-// 3. Filtrer pour ne pas montrer le compte ACTUEL dans la liste de switch
+// 3. Filter so the CURRENT account doesn't show in the "Switch" list
 const accountsToSwitchTo = computed(() => {
   const allSessions = getStoredSessions();
   if (!user.value) return allSessions;
-  // On compare les IDs pour exclure l'utilisateur courant
+  // Compare IDs to exclude current user
   return allSessions.filter(s => s.user.id !== user.value.id);
 });
 
@@ -84,20 +84,20 @@ function goToProfile() {
 }
 
 async function handleSignOut() {
-  // Optionnel: on pourrait aussi retirer le compte du vault ici
+  // Optional: You could also remove the account from the vault here
   const { error } = await supabase.auth.signOut();
   isDropdownOpen.value = false;
   if (error) console.error('Sign out error:', error);
 }
 
 async function handleSwitchAccount(targetAccount) {
-  // A. Sauvegarder la session actuelle avant de switcher
+  // A. Save current session before switching
   const { data: { session: currentSession } } = await supabase.auth.getSession();
   if (currentSession) {
     updateVaultWithSession(currentSession);
   }
 
-  // B. Charger la nouvelle session
+  // B. Load the new session
   const { error } = await supabase.auth.setSession({
     access_token: targetAccount.access_token,
     refresh_token: targetAccount.refresh_token
@@ -105,10 +105,11 @@ async function handleSwitchAccount(targetAccount) {
 
   if (!error) {
     isDropdownOpen.value = false;
+    // C. Navigate to the new profile and refresh state
     await router.push(`/profile/${targetAccount.user.id}`);
-    window.location.reload(); // Rechargement propre pour rafraîchir toutes les données
+    window.location.reload();
   } else {
-    console.error("Erreur de switch:", error);
+    console.error("Switch error:", error);
   }
 }
 
@@ -118,7 +119,7 @@ async function handleAddNewAccount() {
     updateVaultWithSession(currentSession);
   }
 
-  await supabase.auth.signOut(); // Sign out local pour forcer le LoginRedirect
+  await supabase.auth.signOut(); // Sign out locally to trigger LoginRedirect
   isDropdownOpen.value = false;
   router.push('/login');
 }
@@ -138,18 +139,18 @@ async function handleAddNewAccount() {
 
     <div v-if="isDropdownOpen" class="account-menu">
       <div class="menu-section">
-        <p class="section-label">Connecté en tant que :</p>
+        <p class="section-label">Signed in as:</p>
         <div class="account-item active profile-link" @click.stop="goToProfile">
           <img :src="user?.user_metadata?.avatar_url || 'https://placehold.co/40'" class="item-avatar" />
           <div class="item-details">
-            <span class="item-username">{{ user?.user_metadata?.username || 'Utilisateur' }}</span>
-            <span class="item-email">Voir le profil →</span>
+            <span class="item-username">{{ user?.user_metadata?.username || 'User' }}</span>
+            <span class="item-email">Go to Profile →</span>
           </div>
         </div>
       </div>
 
       <div v-if="accountsToSwitchTo.length > 0" class="menu-section">
-        <p class="section-label">Changer de compte</p>
+        <p class="section-label">Switch Accounts</p>
         <div
             v-for="acc in accountsToSwitchTo"
             :key="acc.user.id"
@@ -165,8 +166,8 @@ async function handleAddNewAccount() {
       </div>
 
       <div class="menu-section">
-        <button @click.stop="handleAddNewAccount" class="menu-button">+ Ajouter un compte</button>
-        <button @click.stop="handleSignOut" class="menu-button sign-out-button">Déconnexion</button>
+        <button @click.stop="handleAddNewAccount" class="menu-button">+ Add New Account</button>
+        <button @click.stop="handleSignOut" class="menu-button sign-out-button">Sign Out</button>
       </div>
     </div>
   </div>
