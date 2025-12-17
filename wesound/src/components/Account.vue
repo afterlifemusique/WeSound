@@ -3,43 +3,58 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { supabase } from '@/lib/supabase';
 import { useUserStore } from '@/store/user';
 import { storeToRefs } from 'pinia';
-import { useRouter } from "vue-router"; // Import router for navigation
+import { useRouter } from "vue-router";
 
 // --- SETUP & STATE ---
 const userStore = useUserStore();
-const { user } = storeToRefs(userStore); // Current active user from Pinia
+const { user } = storeToRefs(userStore);
 const router = useRouter();
 
-// Dummy accounts (for switching demo)
-const availableAccounts = ref([
-  { id: 'uuid-1', username: 'pro_artist', email: 'pro@example.com', avatar_url: 'https://placehold.co/40x40/B8860B/white' },
-  { id: 'uuid-2', username: 'tester_dev', email: 'test@example.com', avatar_url: 'https://placehold.co/40x40/404040/white' }
-]);
+const SESSIONS_KEY = 'sb-multi-sessions';
+
+// 1. Récupérer les sessions stockées
+const getStoredSessions = () => {
+  const data = localStorage.getItem(SESSIONS_KEY);
+  return data ? JSON.parse(data) : [];
+};
+
+// 2. Mettre à jour ou ajouter une session dans le "Vault"
+const updateVaultWithSession = (session) => {
+  if (!session) return;
+  const sessions = getStoredSessions();
+
+  const sessionData = {
+    access_token: session.access_token,
+    refresh_token: session.refresh_token,
+    user: session.user
+  };
+
+  const index = sessions.findIndex(s => s.user.id === session.user.id);
+
+  if (index > -1) {
+    sessions[index] = sessionData; // Mise à jour des tokens
+  } else {
+    sessions.push(sessionData); // Nouvel ajout
+  }
+
+  localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions));
+};
 
 // --- DROPDOWN LOGIC ---
 const isDropdownOpen = ref(false);
 const dropdownRef = ref(null);
-const isToggling = ref(false); // New state to prevent instant closing
+const isToggling = ref(false);
 
 function toggleDropdown() {
   if (!isDropdownOpen.value) {
-    // If we are opening, set the guard flag
     isToggling.value = true;
-    setTimeout(() => {
-      isToggling.value = false;
-    }, 100); // 100ms is a safe minimum delay
+    setTimeout(() => isToggling.value = false, 100);
   }
   isDropdownOpen.value = !isDropdownOpen.value;
 }
 
-// Function to close the dropdown when clicking outside
 function handleClickOutside(event) {
-  // If we are currently in the 100ms window after opening the dropdown, ignore the click.
-  if (isToggling.value) {
-    return;
-  }
-
-  if (dropdownRef.value && !dropdownRef.value.contains(event.target)) {
+  if (!isToggling.value && dropdownRef.value && !dropdownRef.value.contains(event.target)) {
     isDropdownOpen.value = false;
   }
 }
@@ -51,268 +66,126 @@ onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside);
 });
 
-// Filter accounts for switching
+// 3. Filtrer pour ne pas montrer le compte ACTUEL dans la liste de switch
 const accountsToSwitchTo = computed(() => {
-  if (!user.value) return availableAccounts.value;
-  return availableAccounts.value.filter(account => account.id !== user.value.id);
+  const allSessions = getStoredSessions();
+  if (!user.value) return allSessions;
+  // On compare les IDs pour exclure l'utilisateur courant
+  return allSessions.filter(s => s.user.id !== user.value.id);
 });
 
-// --- NAVIGATION & ACTION HANDLERS ---
+// --- ACTION HANDLERS ---
 
 function goToProfile() {
-  // Check if the user ID is available
-  if (user.value && user.value.id) {
-    // 1. Navigate to the profile page
+  if (user.value?.id) {
     router.push(`/profile/${user.value.id}`);
-
-    // 2. Crucially, close the dropdown after navigation
-    isDropdownOpen.value = false;
-
-  } else {
-    // Handle the case where the user is not loaded or logged in
-    console.warn("User ID not available for navigation.");
     isDropdownOpen.value = false;
   }
 }
 
 async function handleSignOut() {
+  // Optionnel: on pourrait aussi retirer le compte du vault ici
   const { error } = await supabase.auth.signOut();
-  if (error) {
-    console.error('Sign out error:', error);
+  isDropdownOpen.value = false;
+  if (error) console.error('Sign out error:', error);
+}
+
+async function handleSwitchAccount(targetAccount) {
+  // A. Sauvegarder la session actuelle avant de switcher
+  const { data: { session: currentSession } } = await supabase.auth.getSession();
+  if (currentSession) {
+    updateVaultWithSession(currentSession);
   }
-  isDropdownOpen.value = false;
-  // Redirection/store update handled by global listener
+
+  // B. Charger la nouvelle session
+  const { error } = await supabase.auth.setSession({
+    access_token: targetAccount.access_token,
+    refresh_token: targetAccount.refresh_token
+  });
+
+  if (!error) {
+    isDropdownOpen.value = false;
+    window.location.reload(); // Rechargement propre pour rafraîchir toutes les données
+  } else {
+    console.error("Erreur de switch:", error);
+  }
 }
 
-async function handleSwitchAccount(accountId) {
-  console.log('Switching to account:', accountId);
-  // Real implementation: Supabase session switching logic here
-  isDropdownOpen.value = false;
-}
+async function handleAddNewAccount() {
+  const { data: { session: currentSession } } = await supabase.auth.getSession();
+  if (currentSession) {
+    updateVaultWithSession(currentSession);
+  }
 
-function handleAddNewAccount() {
-  console.log('Redirecting to login for new account');
-  // Real implementation: Redirect to login/signup page
+  await supabase.auth.signOut(); // Sign out local pour forcer le LoginRedirect
   isDropdownOpen.value = false;
+  router.push('/login');
 }
 </script>
 
 <template>
   <div class="account-dropdown-wrapper" ref="dropdownRef">
-
-    <button @click="toggleDropdown" class="account-trigger" aria-expanded="true" aria-controls="account-menu">
+    <button @click="toggleDropdown" class="account-trigger">
       <div class="user-info">
-        <img v-if="user && user.avatar_url" :src="user.avatar_url" alt="User Avatar" class="trigger-avatar" />
+        <img v-if="user?.user_metadata?.avatar_url" :src="user.user_metadata.avatar_url" class="trigger-avatar" />
         <div v-else class="trigger-avatar-placeholder"></div>
       </div>
-      <svg :class="['arrow-icon', { 'rotated': isDropdownOpen }]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg :class="['arrow-icon', { 'rotated': isDropdownOpen }]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <polyline points="6 9 12 15 18 9"></polyline>
       </svg>
     </button>
 
-    <div v-if="isDropdownOpen" id="account-menu" class="account-menu" role="menu" aria-label="Account options">
-
-      <div class="menu-section current-user-section">
-        <p class="section-label">Signed in as:</p>
-        <div class="account-item active profile-link" @click.stop="goToProfile" role="menuitem">
-          <img :src="user?.avatar_url" alt="Current Avatar" class="item-avatar" />
+    <div v-if="isDropdownOpen" class="account-menu">
+      <div class="menu-section">
+        <p class="section-label">Connecté en tant que :</p>
+        <div class="account-item active profile-link" @click.stop="goToProfile">
+          <img :src="user?.user_metadata?.avatar_url || 'https://placehold.co/40'" class="item-avatar" />
           <div class="item-details">
-            <span class="item-username">{{ user?.email || 'Unknown User' }}</span>
-            <span class="item-email">Go to Profile →</span>
+            <span class="item-username">{{ user?.user_metadata?.username || 'Utilisateur' }}</span>
+            <span class="item-email">Voir le profil →</span>
           </div>
         </div>
       </div>
 
-      <div v-if="accountsToSwitchTo.length > 0" class="menu-section switch-account-section">
-        <p class="section-label">Switch Accounts</p>
+      <div v-if="accountsToSwitchTo.length > 0" class="menu-section">
+        <p class="section-label">Changer de compte</p>
         <div
-            v-for="account in accountsToSwitchTo"
-            :key="account.id"
+            v-for="acc in accountsToSwitchTo"
+            :key="acc.user.id"
             class="account-item switchable"
-            @click.stop="handleSwitchAccount(account.id)"
-            role="menuitem"
+            @click.stop="handleSwitchAccount(acc)"
         >
+          <img :src="acc.user.user_metadata?.avatar_url || 'https://placehold.co/40'" class="item-avatar" />
+          <div class="item-details">
+            <span class="item-username">{{ acc.user.user_metadata?.username || acc.user.email }}</span>
+            <span class="item-email">{{ acc.user.email }}</span>
+          </div>
         </div>
       </div>
 
-      <div class="menu-section actions-section">
-        <button @click="handleAddNewAccount" class="menu-button" role="menuitem">
-          + Add New Account
-        </button>
-        <button @click="handleSignOut" class="menu-button sign-out-button" role="menuitem">
-          Sign Out
-        </button>
+      <div class="menu-section">
+        <button @click.stop="handleAddNewAccount" class="menu-button">+ Ajouter un compte</button>
+        <button @click.stop="handleSignOut" class="menu-button sign-out-button">Déconnexion</button>
       </div>
-
     </div>
   </div>
 </template>
 
 <style scoped>
-.account-dropdown-wrapper {
-  position: relative;
-  display: inline-block;
-  z-index: 1000; /* Ensure the menu is above other content */
-}
-
-/* --- TRIGGER BUTTON --- */
-.account-trigger {
-  display: flex;
-  align-items: center;
-  padding: 8px 12px;
-  border-radius: 25px;
-  background: #2a2a2a; /* Dark background */
-  color: #fff;
-  border: 1px solid #404040;
-  cursor: pointer;
-  transition: background 0.2s;
-  width: 100%;
-  justify-content: space-between;
-}
-
-.account-trigger:hover {
-  background: #353535;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-}
-
-.trigger-avatar, .trigger-avatar-placeholder {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.trigger-avatar-placeholder {
-  background-color: #b8860b; /* Golden color placeholder */
-}
-
-.arrow-icon {
-  width: 18px;
-  height: 18px;
-  margin-left: 8px;
-  transition: transform 0.2s;
-}
-
-.arrow-icon.rotated {
-  transform: rotate(180deg);
-}
-
-/* --- DROPDOWN MENU --- */
-.account-menu {
-  position: absolute;
-  top: 100%; /* Position below the trigger */
-  left: 0;
-  right: auto;
-  width: 280px;
-  background: #1a1a1a;
-  border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-  padding: 10px 0;
-  margin-top: 10px;
-  border: 1px solid #303030;
-}
-
-.menu-section {
-  padding: 8px 0;
-  border-bottom: 1px solid #303030;
-}
-
-.menu-section:last-child {
-  border-bottom: none;
-}
-
-.section-label {
-  padding: 0 16px 8px;
-  color: #888;
-  font-size: 13px;
-  font-weight: 500;
-  margin: 0;
-}
-
-/* --- ACCOUNT ITEMS --- */
-.account-item {
-  display: flex;
-  align-items: center;
-  padding: 10px 16px;
-}
-
-/* Style the profile link inside the menu to look clickable */
-.account-item.profile-link {
-  cursor: pointer;
-  transition: background 0.1s;
-}
-
-.account-item.profile-link:hover {
-  background: #2a2a2a; /* Same hover as switchable items */
-}
-
-.account-item.profile-link .item-email {
-  color: #b8860b; /* Highlight the 'Go to Profile' text */
-}
-
-.account-item.switchable {
-  cursor: pointer;
-  transition: background 0.1s;
-}
-
-.account-item.switchable:hover {
-  background: #2a2a2a;
-}
-
-.item-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  margin-right: 12px;
-  object-fit: cover;
-}
-
-.account-item.active .item-avatar {
-  border: 2px solid #b8860b; /* Highlight active account */
-}
-
-.item-details {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.3;
-}
-
-.item-username {
-  font-weight: 600;
-  font-size: 15px;
-}
-
-.item-email {
-  color: #888;
-  font-size: 12px;
-}
-
-/* --- BUTTONS --- */
-.menu-button {
-  width: 100%;
-  text-align: left;
-  padding: 10px 16px;
-  background: transparent;
-  border: none;
-  color: #fff;
-  cursor: pointer;
-  font-size: 15px;
-  transition: background 0.1s;
-}
-
-.menu-button:hover {
-  background: #2a2a2a;
-}
-
-.sign-out-button {
-  color: #f44336; /* Red for sign-out action */
-}
-
-.sign-out-button:hover {
-  background: #2a2a2a;
-}
+.account-dropdown-wrapper { position: relative; z-index: 9999; }
+.account-menu { position: absolute; top: 100%; left: 0; width: 280px; background: #1a1a1a; border-radius: 12px; border: 1px solid #303030; margin-top: 10px; }
+.account-trigger { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 8px 12px; background: #2a2a2a; border-radius: 25px; border: 1px solid #404040; cursor: pointer; }
+.trigger-avatar { width: 32px; height: 32px; border-radius: 50%; }
+.arrow-icon { width: 18px; transition: 0.2s; color: white; }
+.arrow-icon.rotated { transform: rotate(180deg); }
+.menu-section { padding: 8px 0; border-bottom: 1px solid #303030; }
+.section-label { padding: 0 16px 8px; color: #888; font-size: 12px; }
+.account-item { display: flex; align-items: center; padding: 10px 16px; cursor: pointer; }
+.account-item:hover { background: #2a2a2a; }
+.item-avatar { width: 36px; height: 36px; border-radius: 50%; margin-right: 12px; }
+.item-details { display: flex; flex-direction: column; }
+.item-username { font-weight: 600; font-size: 14px; color: white; }
+.item-email { font-size: 11px; color: #888; }
+.menu-button { width: 100%; text-align: left; padding: 10px 16px; background: none; border: none; color: white; cursor: pointer; }
+.sign-out-button { color: #ff4444; }
 </style>
