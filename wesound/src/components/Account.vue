@@ -11,6 +11,7 @@ const { user } = storeToRefs(userStore);
 const router = useRouter();
 
 const SESSIONS_KEY = 'sb-multi-sessions';
+const DEFAULT_AVATAR = "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
 
 // --- VAULT UTILS ---
 // Retrieve stored sessions from localStorage
@@ -150,12 +151,11 @@ async function handleAddNewAccount() {
     <button @click="toggleDropdown" class="account-trigger" aria-haspopup="true" :aria-expanded="isDropdownOpen">
       <div class="user-info">
         <img
-            v-if="user?.user_metadata?.avatar_url"
-            :src="user.user_metadata.avatar_url"
+            :src="user?.user_metadata?.avatar_url || DEFAULT_AVATAR"
+            @error="(e) => e.target.src = DEFAULT_AVATAR"
             class="trigger-avatar"
-            alt="Avatar"
+            alt="User Avatar"
         />
-        <div v-else class="trigger-avatar-placeholder"></div>
       </div>
       <svg :class="['arrow-icon', { 'rotated': isDropdownOpen }]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <polyline points="6 9 12 15 18 9"></polyline>
@@ -167,7 +167,8 @@ async function handleAddNewAccount() {
         <p class="section-label">Signed in as:</p>
         <div class="account-item active profile-link" @click.stop="goToProfile">
           <img
-              :src="user?.user_metadata?.avatar_url || 'https://placehold.co/40'"
+              :src="user?.user_metadata?.avatar_url || DEFAULT_AVATAR"
+              @error="(e) => e.target.src = DEFAULT_AVATAR"
               class="item-avatar"
           />
           <div class="item-details">
@@ -179,14 +180,10 @@ async function handleAddNewAccount() {
 
       <div v-if="accountsToSwitchTo.length > 0" class="menu-section">
         <p class="section-label">Switch Accounts</p>
-        <div
-            v-for="acc in accountsToSwitchTo"
-            :key="acc.user.id"
-            class="account-item switchable"
-            @click.stop="handleSwitchAccount(acc)"
-        >
+        <div v-for="acc in accountsToSwitchTo" :key="acc.user.id" class="account-item">
           <img
-              :src="acc.user.user_metadata?.avatar_url || 'https://placehold.co/40'"
+              :src="acc.user.user_metadata?.avatar_url || DEFAULT_AVATAR"
+              @error="(e) => e.target.src = DEFAULT_AVATAR"
               class="item-avatar"
           />
           <div class="item-details">
@@ -228,15 +225,21 @@ async function handleAddNewAccount() {
   background: #353535;
 }
 
-.trigger-avatar, .trigger-avatar-placeholder {
+.trigger-avatar {
   width: 32px;
   height: 32px;
   border-radius: 50%;
   object-fit: cover;
 }
 
-.trigger-avatar-placeholder {
-  background: #b8860b;
+/* Instagram-style placeholder */
+.trigger-avatar-placeholder, .item-avatar:not([src]) {
+  background-color: #efefef; /* Light grey */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23dbdbdb'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E");
+  background-size: 80%;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  border: 1px solid #dbdbdb;
 }
 
 .arrow-icon {
