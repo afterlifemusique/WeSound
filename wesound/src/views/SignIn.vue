@@ -1,14 +1,14 @@
 <template>
-  <div class="login-page">
-    <div class="login-container">
-      <form @submit.prevent="login" class="login-form">
+  <div class="signin-page">
+    <div class="signin-container">
+      <form @submit.prevent="handleSignIn" class="signin-form">
         <div class="form-group">
-          <label for="email">Username or Email</label>
+          <label for="identifier">Username or Email</label>
           <input
-              id="email"
-              v-model="email"
+              id="identifier"
+              v-model="identifier"
               type="text"
-              placeholder="Value"
+              placeholder="Enter username or email"
               required
           />
         </div>
@@ -19,13 +19,13 @@
               id="password"
               v-model="password"
               type="password"
-              placeholder="Value"
+              placeholder="Enter password"
               required
           />
         </div>
 
-        <button type="submit" :disabled="loading" class="login-btn">
-          {{ loading ? 'Logging in...' : 'Log In' }}
+        <button type="submit" :disabled="loading" class="signin-btn">
+          {{ loading ? 'Signing in...' : 'Sign In' }}
         </button>
 
         <a href="#" class="forgot-password">Forgot password?</a>
@@ -44,36 +44,73 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { signIn } from "../api/auth.js";
-import { useUserStore } from "../store/user.js";
+import { supabase } from "@/lib/supabase";
 
 const router = useRouter();
-const userStore = useUserStore();
-
-const email = ref("");
+const identifier = ref("");
 const password = ref("");
 const error = ref(null);
 const loading = ref(false);
 
-async function login() {
+const SESSIONS_KEY = 'sb-multi-sessions';
+
+const updateVaultWithSession = (session) => {
+  if (!session) return;
+  const data = localStorage.getItem(SESSIONS_KEY);
+  const sessions = data ? JSON.parse(data) : [];
+  const sessionData = {
+    access_token: session.access_token,
+    refresh_token: session.refresh_token,
+    user: session.user
+  };
+  const index = sessions.findIndex(s => s.user.id === session.user.id);
+  if (index > -1) sessions[index] = sessionData;
+  else sessions.push(sessionData);
+  localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions));
+};
+
+async function handleSignIn() {
   loading.value = true;
   error.value = null;
 
-  const { data, error: signInError } = await signIn(email.value, password.value);
+  try {
+    let signinEmail = identifier.value;
 
-  if (signInError) {
-    error.value = signInError.message;
-  } else {
-    // User is now logged in, redirect to home
+    // Username lookup if no '@' is present
+    if (!identifier.value.includes('@')) {
+      const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('email')
+          .ilike('username', identifier.value)
+          .single();
+
+      if (profileError || !profile){
+        console.error("Lookup Details:", profileError); // Add this line
+        throw new Error("Username not found.");
+      }
+      signinEmail = profile.email;
+    }
+
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({
+      email: signinEmail,
+      password: password.value,
+    });
+
+    if (signInError) throw signInError;
+
+    if (data.session) updateVaultWithSession(data.session);
     router.push('/');
-  }
 
-  loading.value = false;
+  } catch (err) {
+    error.value = err.message;
+  } finally {
+    loading.value = false;
+  }
 }
 </script>
 
 <style scoped>
-.login-page {
+.signin-page {
   min-height: 100vh;
   background: #000;
   display: flex;
@@ -83,7 +120,7 @@ async function login() {
   padding: 20px;
 }
 
-.login-container {
+.signin-container {
   background: #fff;
   border-radius: 12px;
   padding: 40px;
@@ -92,7 +129,7 @@ async function login() {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-.login-form {
+.signin-form {
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -128,7 +165,7 @@ async function login() {
   border-color: #666;
 }
 
-.login-btn {
+.signin-btn {
   width: 100%;
   padding: 14px;
   background: #333;
@@ -142,11 +179,11 @@ async function login() {
   margin-top: 4px;
 }
 
-.login-btn:hover:not(:disabled) {
+.signin-btn:hover:not(:disabled) {
   background: #1a1a1a;
 }
 
-.login-btn:disabled {
+.signin-btn:disabled {
   background: #666;
   cursor: not-allowed;
 }
@@ -172,6 +209,7 @@ async function login() {
   border-radius: 6px;
 }
 
+/* Signup section remains separate as it transitions to a different flow */
 .signup-section {
   display: flex;
   align-items: center;

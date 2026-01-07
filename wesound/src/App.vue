@@ -1,14 +1,35 @@
 <script setup>
-import { watch } from "vue";
+import { watch, computed, ref, onMounted } from "vue";
 import { RouterView, useRoute } from "vue-router";
-import PlayerBar from "./components/PlayerBar.vue";
-import SearchBar from "./components/SearchBar.vue";
-import ProfilePicture from "./components/ProfilePicture.vue";
 
 import { useITunes } from "./composables/useITunes";
 import { usePlayer } from "./store/player";
+import { useUserStore } from '@/store/user';
+import { storeToRefs } from 'pinia';
+
+import PlayerBar from "./components/PlayerBar.vue";
+import SearchBar from "./components/SearchBar.vue";
+import Account from "@/components/Account.vue";
+import SignInRedirect from "@/components/SignInRedirect.vue";
 
 const route = useRoute();
+
+const userStore = useUserStore();
+const { user } = storeToRefs(userStore);
+const isLoggedIn = computed(() => !!user.value);
+
+// --- NEW: Account Switching Logic ---
+const isSwitching = ref(sessionStorage.getItem('is_switching_account') === 'true');
+
+onMounted(() => {
+  if (isSwitching.value) {
+    // Wait for Supabase to re-hydrate the session after the reload
+    setTimeout(() => {
+      sessionStorage.removeItem('is_switching_account');
+      isSwitching.value = false;
+    }, 1000); // 1 second buffer
+  }
+});
 
 const { songs, searchSongs, loading } = useITunes();
 const player = usePlayer();
@@ -26,29 +47,33 @@ watch(songs, (newSongs) => {
 
 <template>
   <div class="app-layout">
-    <!-- Search Bar -->
     <header class="app-header p-4 bg-gray-900">
       <SearchBar :loading="loading" @search="handleSearch" />
     </header>
 
-    <!-- Navigation Sidebar -->
     <nav class="sidebar">
-      <div class="sidebar-header">
-        <ProfilePicture />
-        <router-link to="/" class="logo">WS</router-link>
+      <router-link to="/" class="logo">WS</router-link>
+
+      <div class="auth-wrapper">
+        <div v-if="isSwitching" class="switching-loader">
+          <div class="spinner"></div>
+        </div>
+
+        <template v-else>
+          <Account v-if="isLoggedIn" />
+          <SignInRedirect v-else />
+        </template>
       </div>
+
       <router-link to="/" class="nav-item">Home</router-link>
       <router-link to="/feed" class="nav-item">Feed</router-link>
       <router-link to="/messages" class="nav-item">Messages</router-link>
-          </nav>
+    </nav>
 
-    <!-- Main content -->
     <main class="main-content">
-      <!-- Pass songs as prop to routed components -->
       <RouterView :songs="songs" />
     </main>
 
-    <!-- Global Player -->
     <PlayerBar v-if="!route.path.startsWith('/song/')" />
   </div>
 </template>
@@ -78,7 +103,7 @@ html, body {
   top: 15px;
   left: 140px;
   right: 1050px;
-  z-index: 50;
+  z-index: 9999;
 }
 
 /* Sidebar layout */
@@ -94,13 +119,7 @@ html, body {
   flex-direction: column;
   gap: 12px;
   color: white;
-}
-
-.sidebar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px; /* Add some space below the header */
+  z-index: 9999;
 }
 
 /* Sidebar items */
@@ -146,5 +165,34 @@ html, body {
   padding-bottom: 80px; /* player height */
   height: calc(100vh - 60px - 60px); /* viewport minus header + player */
   overflow-y: auto;
+}
+
+.auth-wrapper {
+  margin-bottom: 12px;
+  min-height: 48px; /* Prevents layout jump */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Switching State Styles */
+.switching-loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #b8860b;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 </style>
