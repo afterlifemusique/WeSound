@@ -12,6 +12,7 @@ const { user } = storeToRefs(userStore);
 // -- State --
 const profile = ref(null);
 const loading = ref(true);
+const uploading = ref(false);
 const activeTab = ref("Music");
 const tabs = ["Music", "Posts", "Threads", "Merch", "Events"];
 
@@ -19,6 +20,7 @@ const stats = ref({ followers: 0, following: 0, totalLikes: 0 });
 const songs = ref([]);
 const posts = ref([]);
 const threads = ref([]);
+const fileInput = ref(null);
 // --- DYNAMIC LOGIC ---
 
 // Computed: Check if the profile being viewed belongs to the logged-in user
@@ -31,14 +33,18 @@ async function loadProfileData(id) {
   if (!id) return;
   loading.value = true;
 
-  // Run these in parallel for better performance
-  await Promise.all([
-    fetchProfile(id),
-    fetchStats(id),
-    fetchContent(id)
-  ]);
-
-  loading.value = false;
+  try {
+    // We use Promise.allSettled so if one fails (like stats), the others continue
+    await Promise.allSettled([
+      fetchProfile(id),
+      fetchStats(id),
+      fetchContent(id)
+    ]);
+  } catch (error) {
+    console.error("Critical load error:", error);
+  } finally {
+    loading.value = false;
+  }
 }
 
 // Watch the route params: whenever the ID in the URL changes, re-fetch data
@@ -65,38 +71,99 @@ async function fetchProfile(id) {
 }
 
 async function fetchStats(id) {
-  const [followers, following, likes] = await Promise.all([
-    supabase.from('followers').select('*', { count: 'exact', head: true }).eq('following_id', id),
-    supabase.from('followers').select('*', { count: 'exact', head: true }).eq('follower_id', id),
-    supabase.from('song_likes').select('song_id', { count: 'exact', head: true }).eq('song_id', id)
-  ]);
+  try {
+    const [followers, following, likes] = await Promise.all([
+      supabase.from('followers').select('*', { count: 'exact', head: true }).eq('following_id', id),
+      supabase.from('followers').select('*', { count: 'exact', head: true }).eq('follower_id', id),
+      supabase.from('song_likes').select('song_id', { count: 'exact', head: true }).eq('song_id', id)
+    ]);
 
-  stats.value = {
-    followers: followers.count || 0,
-    following: following.count || 0,
-    totalLikes: likes.count || 0
-  };
+    stats.value = {
+      followers: followers.count || 0,
+      following: following.count || 0,
+      totalLikes: likes.count || 0
+    };
+  } catch (err) {
+    console.error("Error fetching stats:", err);
+  }
 }
 
 async function fetchContent(id) {
-  const { data: songsData } = await supabase
-      .from('songs')
-      .select('*')
-      .eq('uploaded_by', id)
-      .order('created_at', { ascending: false })
-      .limit(12);
+  // 1. Fetch Songs and Threads (always public in your current setup)
+  const [songsRes, threadsRes] = await Promise.all([
+    supabase.from('songs').select('*').eq('uploaded_by', id).order('created_at', { ascending: false }),
+    supabase.from('threads').select('*, profiles!threads_user_id_fkey(*)').eq('user_id', id).is('parent_id', null).order('created_at', { ascending: false })
+  ]);
 
-  songs.value = songsData || [];
+  songs.value = songsRes.data || [];
+  threads.value = threadsRes.data || [];
 
-  const { data: threadsData } = await supabase
-      .from('threads')
-      .select('*, profiles!threads_user_id_fkey(*)')
-      .eq('user_id', id)
-      .is('parent_id', null)
-      .order('created_at', { ascending: false })
-      .limit(20);
+  // 2. Controlled Fetch for Posts
+  if (isOwnProfile.value) {
+    // If it's my profile, I can see all my posts
+    const { data } = await supabase.from('posts').select('*').eq('user_id', id).order('created_at', { ascending: false });
+    posts.value = data || [];
+  } else {
+    // If it's someone else, check if current user follows them
+    const { data: followCheck } = await supabase
+        .from('followers')
+        .select('id')
+        .eq('follower_id', user.value?.id) // Me
+        .eq('following_id', id)            // The profile owner
+        .single();
 
-  threads.value = threadsData || [];
+    if (followCheck) {
+      // User is a follower, fetch the posts
+      const { data: postsData } = await supabase.from('posts').select('*').eq('user_id', id).order('created_at', { ascending: false });
+      posts.value = postsData || [];
+    } else {
+      // Not a follower
+      posts.value = [];
+    }
+  }
+}
+
+async function handleFileUpload(event) {
+  const file = event.target.files[0];
+  if (!file || !user.value) return;
+
+  try {
+    uploading.value = true;
+
+    // 1. Upload to Supabase Storage
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${user.value.id}/${Math.random()}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+        .from('posts')
+        .upload(filePath, file);
+
+    if (uploadError) throw uploadError;
+
+    // 2. Get Public URL
+    const { data: { publicUrl } } = supabase.storage
+        .from('posts')
+        .getPublicUrl(filePath);
+
+    // 3. Insert into Posts Table
+    const { error: dbError } = await supabase
+        .from('posts')
+        .insert({
+          user_id: user.value.id,
+          image_url: publicUrl,
+          caption: "New post" // You could add a prompt for this later
+        });
+
+    if (dbError) throw dbError;
+
+    // Refresh data
+    await fetchContent(user.value.id);
+  } catch (error) {
+    alert('Error uploading post: ' + error.message);
+  } finally {
+    uploading.value = false;
+  }
 }
 
 // --- HELPERS ---
@@ -158,13 +225,17 @@ function formatDate(date) {
 
             <!-- Action Buttons -->
             <div class="actions">
-              <button v-if="!isOwnProfile" @click="followUser" class="follow-btn">
-                Follow
-              </button>
-              <button v-if="isOwnProfile" class="edit-btn">
-                Edit Profile
-              </button>
-              <button class="share-btn">Share</button>
+              <button v-if="!isOwnProfile" @click="followUser" class="follow-btn">Follow</button>
+
+              <template v-if="isOwnProfile">
+                <button class="edit-btn">Edit Profile</button>
+                <input type="file" ref="fileInput" @change="handleFileUpload" accept="image/*" style="display: none" />
+                <button @click="fileInput.click()" class="share-btn" :disabled="uploading">
+                  {{ uploading ? 'Uploading...' : 'Post Photo' }}
+                </button>
+              </template>
+
+              <button v-else class="share-btn">Share</button>
             </div>
           </div>
         </div>
@@ -207,7 +278,19 @@ function formatDate(date) {
 
           <!-- Posts Tab -->
           <div v-if="activeTab === 'Posts'" class="tab-content">
-            <p class="placeholder-text">Posts coming soon</p>
+            <div v-if="posts.length" class="posts-grid">
+              <div v-for="post in posts" :key="post.id" class="post-card">
+                <img :src="post.image_url" class="post-image" />
+              </div>
+            </div>
+
+            <div v-else-if="!isOwnProfile && posts.length === 0" class="private-notice">
+              <div class="lock-icon">🔒</div>
+              <h3>This profile is private</h3>
+              <p>Follow this user to see their photos.</p>
+            </div>
+
+            <p v-else class="placeholder-text">No posts yet</p>
           </div>
 
           <!-- Threads Tab -->
@@ -662,5 +745,73 @@ function formatDate(date) {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 16px;
   }
+}
+
+/* POSTS */
+.posts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Classic Instagram-style grid */
+  gap: 10px;
+}
+
+.post-card {
+  position: relative;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #1a1a1a;
+}
+
+.post-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.post-card:hover .post-image {
+  transform: scale(1.05);
+}
+
+.post-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.post-card:hover .post-caption {
+  opacity: 1;
+}
+.private-notice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px dashed #444;
+}
+
+.lock-icon {
+  font-size: 40px;
+  margin-bottom: 16px;
+}
+
+.private-notice h3 {
+  margin: 0 0 8px 0;
+  color: #fff;
+}
+
+.private-notice p {
+  color: #888;
+  margin: 0;
 }
 </style>
