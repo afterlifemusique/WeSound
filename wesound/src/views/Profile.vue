@@ -9,7 +9,7 @@ const route = useRoute();
 const userStore = useUserStore();
 const { user } = storeToRefs(userStore);
 
-// State
+// -- State --
 const profile = ref(null);
 const loading = ref(true);
 const activeTab = ref("Music");
