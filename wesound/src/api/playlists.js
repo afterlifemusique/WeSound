@@ -1,4 +1,4 @@
-import { supabase } from "../composables/useSupabase.js";
+import { supabase } from "../lib/supabase.js";
 
 export async function createPlaylist(title, userId) {
   return supabase.from("playlists").insert({

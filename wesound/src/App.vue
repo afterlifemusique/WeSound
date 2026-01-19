@@ -1,11 +1,35 @@
 <script setup>
-import { watch } from "vue";
-import { RouterView } from "vue-router";
-import PlayerBar from "./components/PlayerBar.vue";
-import SearchBar from "./components/SearchBar.vue";
+import { watch, computed, ref, onMounted } from "vue";
+import { RouterView, useRoute } from "vue-router";
 
 import { useITunes } from "./composables/useITunes";
 import { usePlayer } from "./store/player";
+import { useUserStore } from '@/store/user';
+import { storeToRefs } from 'pinia';
+
+import PlayerBar from "./components/PlayerBar.vue";
+import SearchBar from "./components/SearchBar.vue";
+import Account from "@/components/Account.vue";
+import SignInRedirect from "@/components/SignInRedirect.vue";
+
+const route = useRoute();
+
+const userStore = useUserStore();
+const { user } = storeToRefs(userStore);
+const isLoggedIn = computed(() => !!user.value);
+
+// --- NEW: Account Switching Logic ---
+const isSwitching = ref(sessionStorage.getItem('is_switching_account') === 'true');
+
+onMounted(() => {
+  if (isSwitching.value) {
+    // Wait for Supabase to re-hydrate the session after the reload
+    setTimeout(() => {
+      sessionStorage.removeItem('is_switching_account');
+      isSwitching.value = false;
+    }, 1000); // 1 second buffer
+  }
+});
 
 const { songs, searchSongs, loading } = useITunes();
 const player = usePlayer();
@@ -23,28 +47,34 @@ watch(songs, (newSongs) => {
 
 <template>
   <div class="app-layout">
-    <!-- Search Bar -->
     <header class="app-header p-4 bg-gray-900">
       <SearchBar :loading="loading" @search="handleSearch" />
     </header>
 
-    <!-- Navigation Sidebar -->
     <nav class="sidebar">
-      <router-link to="/" class="logo">WeSound</router-link>
+      <router-link to="/" class="logo">WS</router-link>
+
+      <div class="auth-wrapper">
+        <div v-if="isSwitching" class="switching-loader">
+          <div class="spinner"></div>
+        </div>
+
+        <template v-else>
+          <Account v-if="isLoggedIn" />
+          <SignInRedirect v-else />
+        </template>
+      </div>
+
       <router-link to="/" class="nav-item">Home</router-link>
       <router-link to="/feed" class="nav-item">Feed</router-link>
       <router-link to="/messages" class="nav-item">Messages</router-link>
-      <router-link to="/profile/1" class="nav-item">Profile</router-link>
     </nav>
 
-    <!-- Main content -->
     <main class="main-content">
-      <!-- Pass songs as prop to routed components -->
       <RouterView :songs="songs" />
     </main>
 
-    <!-- Global Player -->
-    <PlayerBar />
+    <PlayerBar v-if="!route.path.startsWith('/song/')" />
   </div>
 </template>
 
@@ -71,9 +101,9 @@ html, body {
 .app-header {
   position: fixed;
   top: 15px;
-  left: 50px;
-  right: 0;
-  z-index: 50;
+  left: 140px;
+  right: 1050px;
+  z-index: 9999;
 }
 
 /* Sidebar layout */
@@ -82,13 +112,14 @@ html, body {
   left: 0;
   top: 0;
   bottom: 0;
-  width: 220px;
+  width: 100px;
   background: #121212;
   padding: 20px 12px;
   display: flex;
   flex-direction: column;
   gap: 12px;
   color: white;
+  z-index: 9999;
 }
 
 /* Sidebar items */
@@ -119,32 +150,49 @@ html, body {
 
 /* Logo */
 .logo {
-  background-color: #111111;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  border-radius: 6px;
+  font-size: 32px; /* Bigger font for the logo */
   color: #ffffff;
   text-decoration: solid;
-  font-size: 24px;
-  transition: all 0.2s ease;
-  justify-content: center;
+  font-weight: bold;
 }
+
 
 /* Page content pushed right */
 .main-content {
-  margin-left: 230px;
-  padding: 20px;
+  margin-left: 140px;
+  padding: 20px 0;
   padding-top: 80px; /* header height */
   padding-bottom: 80px; /* player height */
   height: calc(100vh - 60px - 60px); /* viewport minus header + player */
   overflow-y: auto;
 }
 
-/*PlayerBar*/
-.player-bar {
-  margin-left: 220px; /* same width as sidebar */
-  padding: 20px;
+.auth-wrapper {
+  margin-bottom: 12px;
+  min-height: 48px; /* Prevents layout jump */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Switching State Styles */
+.switching-loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #b8860b;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 </style>

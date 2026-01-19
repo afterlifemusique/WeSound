@@ -7,6 +7,8 @@ export const usePlayer = defineStore("player", {
         track: null,
         playing: false,
         audio: null,
+        currentTime: 0,
+        duration: 0,
 
         // modes: "repeat-one" | "shuffle" | "repeat-all"
         mode: "repeat-all",
@@ -18,10 +20,40 @@ export const usePlayer = defineStore("player", {
     }),
 
     actions: {
+        normalizeTrack(raw) {
+            return {
+                id: raw.id,
+                title: raw.title,
+                artist: raw.artist,
+                url: raw.url,
+
+                // unify all artwork fields
+                artwork:
+                    raw.artwork ||
+                    raw.cover ||
+                    raw.image ||
+                    raw.artworkUrl100 ||
+                    null,
+
+                // optional: keep a unified cover alias
+                cover:
+                    raw.artwork ||
+                    raw.cover ||
+                    raw.image ||
+                    raw.artworkUrl100 ||
+                    null,
+
+                album: raw.album || '',
+                duration: raw.duration || 0,
+            };
+        },
+
         setPlaylist(songs) {
-            this.playlist = songs;
+            const normalized = songs.map(s => this.normalizeTrack(s));
+
+            this.playlist = normalized;
             this.currentIndex = 0;
-            this.track = this.playlist[0] || null;
+            this.track = normalized[0] || null;
 
             if (!this.audio) {
                 this.audio = new Audio();
@@ -52,7 +84,7 @@ export const usePlayer = defineStore("player", {
             if (song) {
                 const index = this.playlist.findIndex(s => s.id === song.id);
                 this.currentIndex = index !== -1 ? index : this.playlist.length - 1;
-                this.track = this.playlist[this.currentIndex];
+                this.track = this.normalizeTrack(this.playlist[this.currentIndex]);
                 this._loadTrack(this.track);
             }
 
@@ -176,10 +208,41 @@ export const usePlayer = defineStore("player", {
             this.playing = true;
         },
 
+        seekTo(time) {
+            if (!this.audio) return;
+            this.audio.currentTime = time;
+            this.currentTime = time;
+        },
+
+        initAudio() {
+            if (this.audio) return;  // don't recreate
+
+            this.audio = new Audio();
+
+            // fires once per track (metadata loaded)
+            this.audio.onloadedmetadata = () => {
+                this.duration = this.audio.duration || 0;
+            };
+
+            // fires continuously during playback
+            this.audio.ontimeupdate = () => {
+                this.currentTime = this.audio.currentTime;
+            };
+        },
+
         _loadTrack(track) {
-            if (!this.audio) this.audio = new Audio();
+            this.initAudio();     // ensure audio exists + handlers attached
+
             this.audio.src = track.url;
-            this.audio.load();
+            this.audio.load();    // will trigger onloadedmetadata → updates duration
+
+            this.audio.onloadedmetadata = () => {
+                this.duration = this.audio.duration;
+            };
+
+            this.audio.ontimeupdate = () => {
+                this.currentTime = this.audio.currentTime;
+            };
         },
 
         // Build queue of indices not yet played in this shuffle round.

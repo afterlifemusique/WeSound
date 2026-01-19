@@ -1,4 +1,4 @@
-import { supabase } from "../composables/useSupabase.js";
+import { supabase } from "../lib/supabase.js";
 
 export async function fetchSongs() {
   return supabase.from("songs").select("*").order("created_at", { ascending: false });

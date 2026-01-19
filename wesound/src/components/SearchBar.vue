@@ -15,90 +15,38 @@ const onSearch = (e) => {
 </script>
 
 <template>
-  <form @submit="onSearch" class="searchbar">
+  <form @submit.prevent="onSearch" class="search-container">
     <input
         type="text"
         v-model="query"
-        placeholder="Search songs..."
+        placeholder="Search..."
         class="search-input"
     />
-    <button type="submit" :disabled="loading" aria-label="Search">
-      <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="search-icon"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          stroke-width="2"
-          aria-hidden="true"
-      >
-        <circle cx="11" cy="11" r="7" />
-        <line x1="16.656" y1="16.657" x2="21" y2="21" />
-      </svg>
-    </button>
   </form>
 </template>
 
 <style scoped>
-.searchbar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  background-color: #282828; /* Spotify dark background */
-  border-radius: 4px;
-  max-width: 500px;
-  margin: 0 auto;
-  box-shadow: 0 2px 4px rgb(0 0 0 / 0.5);
+.search-container {
+  max-width: 400px;
 }
 
 .search-input {
-  flex-grow: 1;
-  padding: 6px 12px;
-  border-radius: 4px;
-  border: none;
-  font-size: 1em;
-  color: white;
-  background-color: #282828;
-  transition: background-color 0.3s ease;
+  width: 100%;
+  padding: 12px 20px;
+  background: #3a3a3a;
+  border: 1px solid #4a4a4a;
+  border-radius: 25px;
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
 }
 
 .search-input::placeholder {
-  color: #b3b3b3;
+  color: #888;
 }
 
 .search-input:focus {
-  outline: none;
-  background-color: #474747;
-  color: #c8c8c8;
-}
-
-button {
-  background-color: transparent;
-  border: none;
-  padding: 4px;
-  cursor: pointer;
-  transition: color 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #b3b3b3;
-}
-
-button:hover {
-  color: #ad7e18;
-}
-
-button:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-.search-icon {
-  width: 20px;
-  height: 20px;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  border-color: #666;
 }
 </style>
