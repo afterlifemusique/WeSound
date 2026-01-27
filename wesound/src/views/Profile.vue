@@ -21,6 +21,11 @@ const songs = ref([]);
 const posts = ref([]);
 const threads = ref([]);
 const fileInput = ref(null);
+
+const followStatus = ref(null); // 'pending', 'accepted', or null
+const pendingRequests = ref([]);
+const showRequestsModal = ref(false);
+const processingId = ref(null); // To show loading on specific buttons
 // --- DYNAMIC LOGIC ---
 
 // Computed: Check if the profile being viewed belongs to the logged-in user
@@ -72,10 +77,16 @@ async function fetchProfile(id) {
 
 async function fetchStats(id) {
   try {
-    const [followers, following, likes] = await Promise.all([
-      supabase.from('followers').select('*', { count: 'exact', head: true }).eq('following_id', id),
-      supabase.from('followers').select('*', { count: 'exact', head: true }).eq('follower_id', id),
-      supabase.from('song_likes').select('song_id', { count: 'exact', head: true }).eq('song_id', id)
+    const [followers, following, likes, followCheck] = await Promise.all([
+      supabase.from('followers').select('*', { count: 'exact', head: true }).eq('following_id', id).eq('status', 'accepted'),
+      supabase.from('followers').select('*', { count: 'exact', head: true }).eq('follower_id', id).eq('status', 'accepted'),
+      supabase.from('song_likes').select('song_id', { count: 'exact', head: true }).eq('song_id', id),
+      // Check if current user has a relationship with this profile
+      supabase.from('followers')
+          .select('status')
+          .eq('follower_id', user.value?.id)
+          .eq('following_id', id)
+          .maybeSingle()
     ]);
 
     stats.value = {
@@ -83,13 +94,15 @@ async function fetchStats(id) {
       following: following.count || 0,
       totalLikes: likes.count || 0
     };
+
+    followStatus.value = followCheck.data?.status || null;
   } catch (err) {
     console.error("Error fetching stats:", err);
   }
 }
 
 async function fetchContent(id) {
-  // 1. Fetch Songs and Threads (always public in your current setup)
+  // 1. Fetch Songs and Threads (Public Content)
   const [songsRes, threadsRes] = await Promise.all([
     supabase.from('songs').select('*').eq('uploaded_by', id).order('created_at', { ascending: false }),
     supabase.from('threads').select('*, profiles!threads_user_id_fkey(*)').eq('user_id', id).is('parent_id', null).order('created_at', { ascending: false })
@@ -98,30 +111,93 @@ async function fetchContent(id) {
   songs.value = songsRes.data || [];
   threads.value = threadsRes.data || [];
 
-  // 2. Controlled Fetch for Posts
+  // 2. Controlled Fetch for Posts (Private Content)
   if (isOwnProfile.value) {
-    // If it's my profile, I can see all my posts
+    // Owner sees everything
     const { data } = await supabase.from('posts').select('*').eq('user_id', id).order('created_at', { ascending: false });
     posts.value = data || [];
   } else {
-    // If it's someone else, check if current user follows them
+    // Check for an 'accepted' relationship
     const { data: followCheck } = await supabase
         .from('followers')
-        .select('id')
-        .eq('follower_id', user.value?.id) // Me
-        .eq('following_id', id)            // The profile owner
-        .single();
+        .select('status')
+        .eq('follower_id', user.value?.id) // Viewer
+        .eq('following_id', id)            // Profile Owner
+        .eq('status', 'accepted')          // Must be accepted
+        .maybeSingle();                    // Use maybeSingle to avoid errors if no row exists
 
     if (followCheck) {
-      // User is a follower, fetch the posts
       const { data: postsData } = await supabase.from('posts').select('*').eq('user_id', id).order('created_at', { ascending: false });
       posts.value = postsData || [];
     } else {
-      // Not a follower
+      // Not following or request is still 'pending'
       posts.value = [];
     }
   }
 }
+
+// Fetch incoming pending requests for the logged-in user
+async function fetchPendingRequests() {
+  if (!isOwnProfile.value) return;
+
+  const { data, error } = await supabase
+      .from('followers')
+      .select(`
+      id,
+      follower_id,
+      profiles!followers_follower_id_fkey (
+        username,
+        display_name,
+        avatar_url
+      )
+    `)
+      .eq('following_id', user.value.id)
+      .eq('status', 'pending');
+
+  if (error) console.error("Error fetching requests:", error);
+  else pendingRequests.value = data || [];
+}
+
+// Accept or Decline
+async function handleRequest(requestId, status) {
+  processingId.value = requestId;
+  try {
+    if (status === 'accepted') {
+      const { error } = await supabase
+          .from('followers')
+          .update({ status: 'accepted' })
+          .eq('id', requestId);
+
+      if (error) throw error;
+    } else {
+      const { error } = await supabase
+          .from('followers')
+          .delete()
+          .eq('id', requestId);
+
+      if (error) throw error;
+    }
+
+    // Refresh the pending list immediately
+    await fetchPendingRequests();
+
+    // Refresh the profile stats if we are on our own profile
+    if (profile.value) {
+      await fetchStats(profile.value.id);
+    }
+  } catch (error) {
+    console.error("Action failed:", error.message);
+    alert("Could not update request: " + error.message);
+  } finally {
+    processingId.value = null;
+  }
+}
+
+// Watch for isOwnProfile to load requests automatically
+watch(isOwnProfile, (newVal) => {
+  if (newVal) fetchPendingRequests();
+}, { immediate: true });
+
 
 async function handleFileUpload(event) {
   const file = event.target.files[0];
@@ -164,6 +240,35 @@ async function handleFileUpload(event) {
   } finally {
     uploading.value = false;
   }
+}
+
+// -- Follow / Unfollow Logic --
+async function toggleFollow() {
+  if (!user.value) return alert("Please log in");
+
+  const targetId = profile.value.id;
+
+  if (!followStatus.value) {
+    // Send Request
+    const { error } = await supabase
+        .from('followers')
+        .insert({
+          follower_id: user.value.id,
+          following_id: targetId,
+          status: 'pending'
+        });
+    if (!error) followStatus.value = 'pending';
+  } else {
+    // Unfollow or Cancel Request
+    const { error } = await supabase
+        .from('followers')
+        .delete()
+        .eq('follower_id', user.value.id)
+        .eq('following_id', targetId);
+    if (!error) followStatus.value = null;
+  }
+  // Refresh stats to update count if it was an 'accepted' unfollow
+  fetchStats(targetId);
 }
 
 // --- HELPERS ---
@@ -213,29 +318,43 @@ function formatDate(date) {
                 <span class="stat-value">{{ stats.followers }}</span>
                 <span class="stat-label">Followers</span>
               </div>
+
+              <div
+                  v-if="isOwnProfile && pendingRequests.length > 0"
+                  class="stat notification-badge"
+                  @click="showRequestsModal = true"
+              >
+                <span class="stat-value pulse">{{ pendingRequests.length }}</span>
+                <span class="stat-label">Requests</span>
+              </div>
+
               <div class="stat">
                 <span class="stat-value">{{ stats.following }}</span>
                 <span class="stat-label">Following</span>
-              </div>
-              <div class="stat">
-                <span class="stat-value">{{ stats.totalLikes }}</span>
-                <span class="stat-label">Likes</span>
               </div>
             </div>
 
             <!-- Action Buttons -->
             <div class="actions">
-              <button v-if="!isOwnProfile" @click="followUser" class="follow-btn">Follow</button>
+              <button
+                  v-if="!isOwnProfile"
+                  @click="toggleFollow"
+                  :class="['follow-btn', { 'pending-btn': followStatus === 'pending', 'unfollow-btn': followStatus === 'accepted' }]"
+              >
+                {{ followStatus === 'accepted' ? 'Unfollow' : followStatus === 'pending' ? 'Requested' : 'Follow' }}
+              </button>
 
               <template v-if="isOwnProfile">
                 <button class="edit-btn">Edit Profile</button>
+
                 <input type="file" ref="fileInput" @change="handleFileUpload" accept="image/*" style="display: none" />
+
                 <button @click="fileInput.click()" class="share-btn" :disabled="uploading">
                   {{ uploading ? 'Uploading...' : 'Post Photo' }}
                 </button>
               </template>
 
-              <button v-else class="share-btn">Share</button>
+              <button v-if="!isOwnProfile" class="share-btn">Share</button>
             </div>
           </div>
         </div>
@@ -333,6 +452,42 @@ function formatDate(date) {
 
     <div v-else class="error">
       <p>Profile not found</p>
+    </div>
+    <div v-if="showRequestsModal" class="modal-overlay" @click.self="showRequestsModal = false">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Pending Requests</h3>
+          <button @click="showRequestsModal = false" class="close-btn">&times;</button>
+        </div>
+
+        <div class="requests-list">
+          <div v-for="req in pendingRequests" :key="req.id" class="request-item">
+            <div class="req-user">
+              <img :src="req.profiles.avatar_url || 'https://via.placeholder.com/40'" class="req-avatar" />
+              <div class="req-details">
+                <p class="req-name">{{ req.profiles.display_name }}</p>
+                <p class="req-username">@{{ req.profiles.username }}</p>
+              </div>
+            </div>
+            <div class="req-buttons">
+              <button
+                  @click="handleRequest(req.id, 'accepted')"
+                  class="accept-btn"
+                  :disabled="processingId === req.id"
+              >
+                {{ processingId === req.id ? '...' : 'Accept' }}
+              </button>
+              <button
+                  @click="handleRequest(req.id, 'declined')"
+                  class="decline-btn"
+                  :disabled="processingId === req.id"
+              >
+                &times;
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -521,6 +676,89 @@ function formatDate(date) {
   background: #3a3a3a;
 }
 
+.follow-btn.pending-btn {
+  background: #333;
+  color: #888;
+  cursor: default;
+}
+
+.follow-btn.unfollow-btn {
+  background: transparent;
+  border: 1px solid #b8860b;
+  color: #b8860b;
+}
+
+.follow-btn.unfollow-btn:hover {
+  background: rgba(184, 134, 11, 0.1);
+}
+
+/* Notification Pulse Effect */
+.notification-badge {
+  cursor: pointer;
+  color: #b8860b;
+}
+
+.pulse {
+  background: #b8860b;
+  color: white;
+  padding: 2px 10px;
+  border-radius: 10px;
+  animation: shadow-pulse 2s infinite;
+}
+
+@keyframes shadow-pulse {
+  0% { box-shadow: 0 0 0 0px rgba(184, 134, 11, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(184, 134, 11, 0); }
+  100% { box-shadow: 0 0 0 0px rgba(184, 134, 11, 0); }
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex; justify-content: center; align-items: center;
+  z-index: 9999;
+  backdrop-filter: blur(5px);
+}
+
+.modal-content {
+  background: #1a1a1a;
+  width: 90%; max-width: 400px;
+  border-radius: 20px;
+  border: 1px solid #333;
+}
+
+.modal-header {
+  padding: 20px; border-bottom: 1px solid #333;
+  display: flex; justify-content: space-between; align-items: center;
+}
+
+.requests-list { padding: 10px; max-height: 400px; overflow-y: auto; }
+
+.request-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px; border-radius: 12px; transition: background 0.2s;
+}
+
+.request-item:hover { background: #222; }
+
+.req-user { display: flex; gap: 12px; align-items: center; }
+.req-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+.req-name { font-weight: 600; font-size: 14px; margin: 0; }
+.req-username { font-size: 12px; color: #888; margin: 0; }
+
+.req-buttons { display: flex; gap: 8px; }
+
+.accept-btn {
+  background: #b8860b; color: white; border: none;
+  padding: 6px 15px; border-radius: 15px; font-weight: 600; cursor: pointer;
+}
+
+.decline-btn {
+  background: #333; color: #ff4d4d; border: none;
+  padding: 6px 12px; border-radius: 50%; font-weight: bold; cursor: pointer;
+}
 /* RIGHT SIDE*/
 .right-side {
   display: flex;
