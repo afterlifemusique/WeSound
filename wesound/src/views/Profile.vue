@@ -26,6 +26,19 @@ const followStatus = ref(null); // 'pending', 'accepted', or null
 const pendingRequests = ref([]);
 const showRequestsModal = ref(false);
 const processingId = ref(null); // To show loading on specific buttons
+
+// images detail
+const selectedImage = ref(null);
+function openLightbox(url) {
+  selectedImage.value = url;
+  // Optional: Prevent scrolling while open
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+  selectedImage.value = null;
+  document.body.style.overflow = 'auto';
+}
 // --- DYNAMIC LOGIC ---
 
 // Computed: Check if the profile being viewed belongs to the logged-in user
@@ -398,9 +411,22 @@ function formatDate(date) {
           <!-- Posts Tab -->
           <div v-if="activeTab === 'Posts'" class="tab-content">
             <div v-if="posts.length" class="posts-grid">
-              <div v-for="post in posts" :key="post.id" class="post-card">
+              <div
+                  v-for="post in posts"
+                  :key="post.id"
+                  class="post-card"
+                  @click="openLightbox(post.image_url)"
+              >
                 <img :src="post.image_url" class="post-image" />
               </div>
+              <Transition name="fade">
+                <div v-if="selectedImage" class="lightbox-overlay" @click="closeLightbox">
+                  <button class="lightbox-close">&times;</button>
+                  <div class="lightbox-content" @click.stop>
+                    <img :src="selectedImage" class="full-res-image" />
+                  </div>
+                </div>
+              </Transition>
             </div>
 
             <div v-else-if="!isOwnProfile && posts.length === 0" class="private-notice">
@@ -875,6 +901,70 @@ function formatDate(date) {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Posts */
+/* Lightbox Styles */
+.lightbox-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.9); /* Deep shadow background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  cursor: zoom-out;
+  backdrop-filter: blur(8px); /* Optional: blurs the background app */
+}
+
+.lightbox-content {
+  max-width: 90%;
+  max-height: 90%;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.full-res-image {
+  max-width: 100%;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 4px;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+  cursor: default;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 40px;
+  font-weight: 200;
+  cursor: pointer;
+  z-index: 10001;
+  transition: opacity 0.2s;
+}
+
+.lightbox-close:hover {
+  opacity: 0.7;
+}
+
+/* Smooth Fade Animation */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
 /* Threads List */
