@@ -125,10 +125,8 @@ async function handleFollowRequest(requestId, status) {
             :stats="stats"
             :follow-status="followStatus"
             :is-own-profile="isOwnProfile"
-            :uploading="uploading"
             :pending-requests="pendingRequests"
             @toggle-follow="handleToggleFollow"
-            @upload-file="handleUploadFile"
             @show-requests="showRequestsModal = true"
         />
       </div>
@@ -146,7 +144,12 @@ async function handleFollowRequest(requestId, status) {
           </div>
 
           <div v-if="activeTab === 'Posts'" class="tab-content">
-            <PostsGrid :posts="posts" :is-own-profile="isOwnProfile" />
+            <PostsGrid
+                :posts="posts"
+                :is-own-profile="isOwnProfile"
+                :uploading="uploading"
+                @upload-file="handleUploadFile"
+            />
           </div>
 
           <div v-if="activeTab === 'Threads'" class="tab-content">

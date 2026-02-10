@@ -2,12 +2,16 @@
 import { ref } from 'vue';
 import ImageLightbox from './ImageLightbox.vue';
 
-defineProps({
+const props = defineProps({
   posts: Array,
-  isOwnProfile: Boolean
+  isOwnProfile: Boolean,
+  uploading: Boolean
 });
 
+const emit = defineEmits(['upload-file']);
+
 const selectedImage = ref(null);
+const fileInput = ref(null);
 
 function openLightbox(url) {
   selectedImage.value = url;
@@ -18,35 +22,77 @@ function closeLightbox() {
   selectedImage.value = null;
   document.body.style.overflow = 'auto';
 }
+
+function handleFileChange(event) {
+  emit('upload-file', event.target.files[0]);
+}
 </script>
 
 <template>
-  <div v-if="posts.length" class="posts-grid">
-    <div
-        v-for="post in posts"
-        :key="post.id"
-        class="post-card"
-        @click="openLightbox(post.image_url)"
-    >
-      <img :src="post.image_url" class="post-image" />
+  <div>
+    <!-- Upload Button for Own Profile -->
+    <div v-if="isOwnProfile" class="upload-section">
+      <input type="file" ref="fileInput" @change="handleFileChange" accept="image/*" style="display: none" />
+      <button @click="fileInput.click()" class="upload-btn" :disabled="uploading">
+        {{ uploading ? 'Uploading...' : '📷 Post Photo' }}
+      </button>
     </div>
 
-    <ImageLightbox
-        :image-url="selectedImage"
-        @close="closeLightbox"
-    />
-  </div>
+    <div v-if="posts.length" class="posts-grid">
+      <div
+          v-for="post in posts"
+          :key="post.id"
+          class="post-card"
+          @click="openLightbox(post.image_url)"
+      >
+        <img :src="post.image_url" class="post-image" />
+      </div>
 
-  <div v-else-if="!isOwnProfile && posts.length === 0" class="private-notice">
-    <div class="lock-icon">🔒</div>
-    <h3>This profile is private</h3>
-    <p>Follow this user to see their photos.</p>
-  </div>
+      <ImageLightbox
+          :image-url="selectedImage"
+          @close="closeLightbox"
+      />
+    </div>
 
-  <p v-else class="placeholder-text">No posts yet</p>
+    <div v-else-if="!isOwnProfile && posts.length === 0" class="private-notice">
+      <div class="lock-icon">🔒</div>
+      <h3>This profile is private</h3>
+      <p>Follow this user to see their photos.</p>
+    </div>
+
+    <p v-else class="placeholder-text">No posts yet</p>
+  </div>
 </template>
 
 <style scoped>
+.upload-section {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.upload-btn {
+  padding: 12px 32px;
+  border-radius: 25px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  background: #b8860b;
+  color: #fff;
+}
+
+.upload-btn:hover:not(:disabled) {
+  background: #9a7009;
+}
+
+.upload-btn:disabled {
+  background: #666;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .posts-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

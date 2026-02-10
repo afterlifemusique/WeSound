@@ -1,22 +1,13 @@
 <script setup>
-import { ref } from 'vue';
-
-const props = defineProps({
+defineProps({
   profile: Object,
   stats: Object,
   followStatus: String,
   isOwnProfile: Boolean,
-  uploading: Boolean,
   pendingRequests: Array
 });
 
-const emit = defineEmits(['toggle-follow', 'upload-file', 'show-requests']);
-
-const fileInput = ref(null);
-
-function handleFileChange(event) {
-  emit('upload-file', event.target.files[0]);
-}
+const emit = defineEmits(['toggle-follow', 'show-requests']);
 </script>
 
 <template>
@@ -76,16 +67,7 @@ function handleFileChange(event) {
           {{ followStatus === 'accepted' ? 'Unfollow' : followStatus === 'pending' ? 'Requested' : 'Follow' }}
         </button>
 
-        <template v-if="isOwnProfile">
-          <button class="edit-btn">Edit Profile</button>
-
-          <input type="file" ref="fileInput" @change="handleFileChange" accept="image/*" style="display: none" />
-
-          <button @click="fileInput.click()" class="share-btn" :disabled="uploading">
-            {{ uploading ? 'Uploading...' : 'Post Photo' }}
-          </button>
-        </template>
-
+        <button v-if="isOwnProfile" class="edit-btn">Edit Profile</button>
         <button v-if="!isOwnProfile" class="share-btn">Share</button>
       </div>
     </div>
