@@ -8,10 +8,11 @@ const props = defineProps({
   uploading: Boolean
 });
 
-const emit = defineEmits(['upload-file']);
+const emit = defineEmits(['upload-file', 'delete-post']);
 
 const selectedImage = ref(null);
 const fileInput = ref(null);
+const deletingId = ref(null);
 
 function openLightbox(url) {
   selectedImage.value = url;
@@ -25,6 +26,16 @@ function closeLightbox() {
 
 function handleFileChange(event) {
   emit('upload-file', event.target.files[0]);
+}
+
+async function handleDelete(event, postId) {
+  event.stopPropagation(); // Prevent opening lightbox
+
+  if (!confirm('Delete this post?')) return;
+
+  deletingId.value = postId;
+  emit('delete-post', postId);
+  // deletingId will be reset by parent after deletion
 }
 </script>
 
@@ -46,6 +57,18 @@ function handleFileChange(event) {
           @click="openLightbox(post.image_url)"
       >
         <img :src="post.image_url" class="post-image" />
+
+        <!-- Delete Button (only for own profile) -->
+        <button
+            v-if="isOwnProfile"
+            @click="handleDelete($event, post.id)"
+            class="delete-btn"
+            :disabled="deletingId === post.id"
+            :title="deletingId === post.id ? 'Deleting...' : 'Delete post'"
+        >
+          <span v-if="deletingId === post.id">⏳</span>
+          <span v-else>🗑️</span>
+        </button>
       </div>
 
       <ImageLightbox
@@ -117,6 +140,46 @@ function handleFileChange(event) {
 
 .post-card:hover .post-image {
   transform: scale(1.05);
+}
+
+/* Delete Button */
+.delete-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  opacity: 0;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.post-card:hover .delete-btn {
+  opacity: 1;
+}
+
+.delete-btn:hover:not(:disabled) {
+  background: rgba(220, 38, 38, 0.9);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.delete-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.delete-btn:active:not(:disabled) {
+  transform: scale(0.95);
 }
 
 .private-notice {

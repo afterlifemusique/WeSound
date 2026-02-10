@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 
 export function useImageUpload(currentUser) {
     const uploading = ref(false);
+    const deleting = ref(false);
 
     async function handleFileUpload(file, onSuccess) {
         if (!file || !currentUser.value) return;
@@ -42,8 +43,53 @@ export function useImageUpload(currentUser) {
         }
     }
 
+    async function handleDeletePost(postId, onSuccess) {
+        if (!currentUser.value) return;
+
+        try {
+            deleting.value = true;
+
+            // Get the post to find the image URL
+            const { data: post } = await supabase
+                .from('posts')
+                .select('image_url')
+                .eq('id', postId)
+                .single();
+
+            if (post) {
+                // Extract file path from URL
+                const urlParts = post.image_url.split('/posts/');
+                if (urlParts.length > 1) {
+                    const filePath = urlParts[1];
+
+                    // Delete from storage
+                    await supabase.storage
+                        .from('posts')
+                        .remove([filePath]);
+                }
+            }
+
+            // Delete from database
+            const { error: dbError } = await supabase
+                .from('posts')
+                .delete()
+                .eq('id', postId)
+                .eq('user_id', currentUser.value.id); // Security: only delete own posts
+
+            if (dbError) throw dbError;
+
+            if (onSuccess) onSuccess();
+        } catch (error) {
+            alert('Error deleting post: ' + error.message);
+        } finally {
+            deleting.value = false;
+        }
+    }
+
     return {
         uploading,
-        handleFileUpload
+        deleting,
+        handleFileUpload,
+        handleDeletePost
     };
 }
