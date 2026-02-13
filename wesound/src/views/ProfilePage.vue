@@ -9,6 +9,7 @@ import { useProfile } from '@/composables/useProfile';
 import { useProfileContent } from '@/composables/useProfileContent';
 import { useFollowRequests } from '@/composables/useFollowRequests';
 import { useImageUpload } from '@/composables/useImageUpload';
+import { useMusicUpload } from '@/composables/useMusicUpload';
 
 // Components
 import ProfileHeader from '@/components/profile/ProfileHeader.vue';
@@ -55,8 +56,17 @@ const {
 
 const {
   uploading,
-  handleFileUpload
+  deleting,
+  handleFileUpload,
+  handleDeletePost
 } = useImageUpload(user);
+
+const {
+  uploading: uploadingMusic,
+  deleting: deletingMusic,
+  handleMusicUpload,
+  handleDeleteSong
+} = useMusicUpload(user);
 
 // Load profile data
 async function loadProfileData(id) {
@@ -110,6 +120,24 @@ async function handleFollowRequest(requestId, status) {
     }
   });
 }
+
+async function handlePostDelete(postId) {
+  await handleDeletePost(postId, () => {
+    fetchContent(user.value.id);
+  });
+}
+
+async function handleUploadMusic(file) {
+  await handleMusicUpload(file, () => {
+    fetchContent(user.value.id);
+  });
+}
+
+async function handleSongDelete(songId) {
+  await handleDeleteSong(songId, () => {
+    fetchContent(user.value.id);
+  });
+}
 </script>
 
 <template>
@@ -140,7 +168,13 @@ async function handleFollowRequest(requestId, status) {
 
         <div class="content-area">
           <div v-if="activeTab === 'Music'" class="tab-content">
-            <MusicGrid :songs="songs" />
+            <MusicGrid
+                :songs="songs"
+                :is-own-profile="isOwnProfile"
+                :uploading="uploadingMusic"
+                @upload-song="handleUploadMusic"
+                @delete-song="handleSongDelete"
+            />
           </div>
 
           <div v-if="activeTab === 'Posts'" class="tab-content">
@@ -149,6 +183,7 @@ async function handleFollowRequest(requestId, status) {
                 :is-own-profile="isOwnProfile"
                 :uploading="uploading"
                 @upload-file="handleUploadFile"
+                @delete-post="handlePostDelete"
             />
           </div>
 
