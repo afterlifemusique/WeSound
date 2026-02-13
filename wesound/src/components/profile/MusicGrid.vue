@@ -4,13 +4,13 @@ import { ref } from 'vue';
 const props = defineProps({
   songs: Array,
   isOwnProfile: Boolean,
-  uploading: Boolean
+  uploading: Boolean,
+  deletingId: [String, Number] // Receive from parent
 });
 
 const emit = defineEmits(['upload-song', 'delete-song']);
 
 const fileInput = ref(null);
-const deletingId = ref(null);
 
 function handleFileChange(event) {
   emit('upload-song', event.target.files[0]);
@@ -21,7 +21,6 @@ async function handleDelete(event, songId) {
 
   if (!confirm('Delete this song?')) return;
 
-  deletingId.value = songId;
   emit('delete-song', songId);
 }
 </script>

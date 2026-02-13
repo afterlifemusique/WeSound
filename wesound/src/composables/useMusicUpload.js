@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 
 export function useMusicUpload(currentUser) {
     const uploading = ref(false);
-    const deleting = ref(false);
+    const deletingId = ref(null);
 
     async function handleMusicUpload(file, onSuccess) {
         if (!file || !currentUser.value) return;
@@ -65,7 +65,7 @@ export function useMusicUpload(currentUser) {
         if (!currentUser.value) return;
 
         try {
-            deleting.value = true;
+            deletingId.value = songId;
 
             // Get the song to find the audio URL
             const { data: song } = await supabase
@@ -100,7 +100,7 @@ export function useMusicUpload(currentUser) {
         } catch (error) {
             alert('Error deleting song: ' + error.message);
         } finally {
-            deleting.value = false;
+            deletingId.value = null;
         }
     }
 
@@ -125,7 +125,7 @@ export function useMusicUpload(currentUser) {
 
     return {
         uploading,
-        deleting,
+        deletingId,
         handleMusicUpload,
         handleDeleteSong
     };

@@ -3,6 +3,7 @@ import { ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useUserStore } from '@/store/user';
+import { supabase } from '@/lib/supabase';
 
 // Composables
 import { useProfile } from '@/composables/useProfile';
@@ -63,7 +64,7 @@ const {
 
 const {
   uploading: uploadingMusic,
-  deleting: deletingMusic,
+  deletingId: deletingMusicId,
   handleMusicUpload,
   handleDeleteSong
 } = useMusicUpload(user);
@@ -133,10 +134,36 @@ async function handleUploadMusic(file) {
   });
 }
 
-async function handleSongDelete(songId) {
-  await handleDeleteSong(songId, () => {
-    fetchContent(user.value.id);
+// Track if we're currently deleting to prevent double calls
+const isDeletingSong = ref(false);
+
+async function onSongDelete(songId) {
+  if (isDeletingSong.value) {
+    console.log('Already deleting, skipping');
+    return;
+  }
+
+  console.log('ProfilePage: onSongDelete called with songId:', songId);
+  isDeletingSong.value = true;
+
+  // Optimistically remove from UI first
+  songs.value = songs.value.filter(song => song.id !== songId);
+
+  // Call the composable's delete function
+  await handleDeleteSong(songId, async () => {
+    console.log('ProfilePage: Delete successful');
+    // Re-fetch to ensure sync with database
+    const { data: songsData } = await supabase
+        .from('songs')
+        .select('*')
+        .eq('uploaded_by', user.value.id)
+        .order('created_at', { ascending: false });
+
+    songs.value = songsData || [];
+    console.log('ProfilePage: Songs refreshed, count:', songs.value.length);
   });
+
+  isDeletingSong.value = false;
 }
 </script>
 
@@ -172,8 +199,9 @@ async function handleSongDelete(songId) {
                 :songs="songs"
                 :is-own-profile="isOwnProfile"
                 :uploading="uploadingMusic"
+                :deleting-id="deletingMusicId"
                 @upload-song="handleUploadMusic"
-                @delete-song="handleSongDelete"
+                @delete-song="onSongDelete"
             />
           </div>
 
