@@ -5,10 +5,10 @@ const props = defineProps({
   songs: Array,
   isOwnProfile: Boolean,
   uploading: Boolean,
-  deletingId: [String, Number] // Receive from parent
+  deletingId: [String, Number]
 });
 
-const emit = defineEmits(['upload-song', 'delete-song']);
+const emit = defineEmits(['upload-song', 'delete-song', 'play-song']);
 
 const fileInput = ref(null);
 
@@ -16,12 +16,18 @@ function handleFileChange(event) {
   emit('upload-song', event.target.files[0]);
 }
 
-async function handleDelete(event, songId) {
+function handleDelete(event, songId) {
   event.stopPropagation();
+  event.preventDefault();
 
+  if (props.deletingId) return;
   if (!confirm('Delete this song?')) return;
 
   emit('delete-song', songId);
+}
+
+function handlePlaySong(song) {
+  emit('play-song', song);
 }
 </script>
 
@@ -42,7 +48,12 @@ async function handleDelete(event, songId) {
     </div>
 
     <div v-if="songs.length" class="songs-grid">
-      <div v-for="song in songs" :key="song.id" class="song-card">
+      <div
+          v-for="song in songs"
+          :key="song.id"
+          class="song-card"
+          @click="handlePlaySong(song)"
+      >
         <div class="song-artwork">
           <img
               v-if="song.artwork_url"

@@ -73,16 +73,39 @@ import { usePlayer } from "../store/player";
 import { useRouter } from "vue-router";
 import HeartLike from "@/components/HeartLike.vue";
 import marqueeDirective from "@/directives/marquee.js";
+import { computed } from "vue";
 
 const vMarquee = marqueeDirective;
-
 const router = useRouter();
 
 const player = usePlayer();
 const { track, playing } = storeToRefs(player);
 
+// Computed property for HeartLike component
+const song = computed(() => track.value);
+
 const toggle = () =>
     playing.value ? player.pause() : player.play();
+
+async function handlePrevious() {
+  player.restart();
+  if (track.value) {
+    await router.replace(`/song/${track.value.id}`);
+    setTimeout(() => {
+      player.play();
+    }, 50);
+  }
+}
+
+async function handleNext() {
+  player.next();
+  if (track.value) {
+    await router.replace(`/song/${track.value.id}`);
+    setTimeout(() => {
+      player.play();
+    }, 50);
+  }
+}
 
 const formatTime = (sec) => {
   if (!sec) return "0:00";
@@ -90,6 +113,20 @@ const formatTime = (sec) => {
   const s = Math.floor(sec % 60).toString().padStart(2, "0");
   return `${m}:${s}`;
 };
+
+const progressStyle = computed(() => {
+  const pct = player.duration
+      ? (player.currentTime / player.duration) * 100
+      : 0;
+
+  return {
+    background: `linear-gradient(
+      to right,
+      #fff ${pct}%,
+      #777 ${pct}%
+    )`
+  };
+});
 
 function goToDetail() {
   if (!track.value) return;
@@ -102,6 +139,14 @@ function openQueueTab() {
     path: `/song/${track.value.id}/`,
     query: { tab: "queue" }
   });
+}
+
+function onLikeError(e) {
+  console.error('Like error:', e);
+}
+
+function onLiked(val) {
+  console.log('Liked status:', val);
 }
 </script>
 

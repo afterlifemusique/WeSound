@@ -3,6 +3,7 @@ import { ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useUserStore } from '@/store/user';
+import { usePlayer } from '@/store/player'
 import { supabase } from '@/lib/supabase';
 
 // Composables
@@ -21,6 +22,7 @@ import ThreadsList from '@/components/profile/ThreadsList.vue';
 import FollowRequestsModal from '@/components/profile/FollowRequestsModal.vue';
 
 const route = useRoute();
+const player = usePlayer();
 const userStore = useUserStore();
 const { user } = storeToRefs(userStore);
 
@@ -104,6 +106,14 @@ watch(isOwnProfile, (newVal) => {
 }, { immediate: true });
 
 // Handlers
+// Play profile songs
+function handlePlaySong(song) {
+  // Set the entire songs array as playlist
+  player.setPlaylist(songs.value);
+  // Play the clicked song
+  player.play(song);
+}
+
 async function handleToggleFollow() {
   await toggleFollow(profile.value.id);
 }
@@ -202,6 +212,7 @@ async function onSongDelete(songId) {
                 :deleting-id="deletingMusicId"
                 @upload-song="handleUploadMusic"
                 @delete-song="onSongDelete"
+                @play-song="handlePlaySong"
             />
           </div>
 
